@@ -3,9 +3,9 @@ services:
     image: mongo:7
     container_name: platform_v4_mongo
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: rootpass
-      MONGO_INITDB_DATABASE: social
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
     ports:
       - "27017:27017"
     volumes:
