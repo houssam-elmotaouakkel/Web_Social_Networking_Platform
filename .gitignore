@@ -2,3 +2,51 @@
 .env
 .env.*
 !.env.example
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime files
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage
+
+# Build artifacts
+dist
+build
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Dependencies
+node_modules/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Project structure documentation
+Project_Structure.txt
+
+# Uploads directory
+uploads/
+
+# documentation
+Rabat_Projet FS.pdf
