@@ -4,17 +4,22 @@ const mongoose = require("mongoose");
 
 let isConnected = false;
 
-async function connectDB(mongoUri = process.env.MONGO_URI) {
-  if (!mongoUri) {
-    throw new Error("MONGO_URI is missing in environment variables.");
+async function connectDB(mongoUri) {
+  const uri =
+    mongoUri ||
+    (process.env.NODE_ENV === "test"
+      ? process.env.MONGO_URI_TEST
+      : process.env.MONGO_URI);
+
+  if (!uri) {
+    throw new Error("Mongo URI is missing in environment variables.");
   }
 
   if (isConnected) return mongoose.connection;
 
-  await mongoose.connect(mongoUri, {
+  await mongoose.connect(uri, {
     serverSelectionTimeoutMS: 5000,
     socketTimeoutMS: 45000,
-
     maxPoolSize: 10,
     autoIndex: process.env.NODE_ENV !== "production",
   });
@@ -22,6 +27,7 @@ async function connectDB(mongoUri = process.env.MONGO_URI) {
   isConnected = true;
   return mongoose.connection;
 }
+
 
 
 async function disconnectDB() {
@@ -67,9 +73,25 @@ function registerGracefulShutdown({ server } = {}) {
   process.on("SIGTERM", () => shutdown("SIGTERM"));
 }
 
+async function resetTestDB() {
+  if (process.env.NODE_ENV !== "test") {
+    throw new Error("resetTestDB can only run in test environment");
+  }
+
+  const conn = mongoose.connection;
+  if (!conn || conn.readyState !== 1) return;
+
+  // Clear collections instead of dropping the whole DB (avoids parallel drop conflicts)
+  const collections = Object.values(conn.collections);
+  await Promise.all(collections.map((c) => c.deleteMany({})));
+}
+
+
+
 module.exports = {
   connectDB,
   disconnectDB,
   registerDbEvents,
   registerGracefulShutdown,
+  resetTestDB,
 };
