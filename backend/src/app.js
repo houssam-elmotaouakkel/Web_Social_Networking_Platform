@@ -6,13 +6,18 @@ const morgan = require("morgan");
 require("dotenv").config();
 const rateLimit = require("express-rate-limit");
 const path = require("path");
+const crypto = require("node:crypto");
 const uploadsDir = process.env.UPLOAD_DIR || "uploads";
 
 const app = express();
 
+// Reduce fingerprinting
+app.disable("x-powered-by");
+
 // Global middleware
 app.use(helmet({ crossOriginResourcePolicy: false }));
 
+// CORS middleware
 const allowedOrigins = (process.env.CORS_ORIGINS || "http://localhost:5173")
   .split(",")
   .map((s) => s.trim())
@@ -34,21 +39,50 @@ app.use(
   })
 );  
 
+// JSON middleware
 app.use(express.json({ limit: "1mb" }));
+
+// URL-encoded middleware
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+
+// Request ID for tracing
+app.use((req, res, next) => {
+  req.id = crypto.randomUUID();
+  res.setHeader("X-Request-Id", req.id);
+  next();
+});
+
+// Morgan middleware
+morgan.token("rid", (req) => req.id);
+
+const format =
+  process.env.NODE_ENV === "production"
+    ? "combined"
+    : "[:date[iso]] :rid :method :url :status :response-time ms";
+
+app.use(morgan(format));
+
 // if behind a reverse proxy in production (render/heroku/nginx)
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
-// Global rate limiter (anti-brute-force + general protection)
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
-  max: 300, // adjust as needed
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use(globalLimiter);
+// Global rate limiter
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 300,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res) => {
+      return res.status(429).json({
+        message: "Too many requests, please try again later.",
+        code: "RATE_LIMITED",
+        requestId: req.id,
+      });
+    },
+  })
+);
+
 
 // Route principale
 app.get('/', (req, res) => {
@@ -84,15 +118,53 @@ app.use((err, req, res, next) => {
 
 // Error-handling MW
 app.use((err, req, res, next) => {
-  console.error("[ERROR]", err);
+  console.error("[ERROR]", req.id, err);
 
-  const status = err.statusCode || err.status || 500;
-  const message =
-    process.env.NODE_ENV === "production"
-      ? "Internal server error"
-      : err.message || "Internal server error";
+  // If headers already sent, delegate to Express default handler
+  if (res.headersSent) return next(err);
 
-  res.status(status).json({ message });
+  let status = err.statusCode || err.status || 500;
+  let code = err.codeName || err.code || "INTERNAL_ERROR";
+  let message = err.message || "Internal server error";
+  let details;
+
+  // Mongoose: invalid ObjectId cast -> 400
+  if (err.name === "CastError") {
+    status = 400;
+    code = "INVALID_ID";
+    message = "Invalid identifier";
+  }
+
+  // Mongoose validation -> 400
+  if (err.name === "ValidationError") {
+    status = 400;
+    code = "VALIDATION_ERROR";
+    message = "Validation failed";
+    details = Object.values(err.errors || {}).map((e) => ({
+      path: e.path,
+      message: e.message,
+    }));
+  }
+
+  // Mongo duplicate key -> 409
+  if (err.code === 11000) {
+    status = 409;
+    code = "DUPLICATE_KEY";
+    message = "Duplicate value";
+    details = err.keyValue || undefined;
+  }
+
+  const isProd = process.env.NODE_ENV === "production";
+  if (isProd && status === 500) {
+    message = "Internal server error";
+    details = undefined;
+  }
+  return res.status(status).json({
+    message,
+    code,
+    requestId: req.id,
+    ...(details ? { details } : {}),
+  });
 });
 
 module.exports = app;
