@@ -7,9 +7,16 @@ require("dotenv").config();
 const rateLimit = require("express-rate-limit");
 const path = require("path");
 const crypto = require("node:crypto");
+const mongoSanitize = require("@exortek/express-mongo-sanitize");
+const hpp = require("hpp");
 const uploadsDir = process.env.UPLOAD_DIR || "uploads";
 
 const app = express();
+
+// if behind a reverse proxy in production (render/heroku/nginx)
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 
 // Reduce fingerprinting
 app.disable("x-powered-by");
@@ -45,6 +52,23 @@ app.use(express.json({ limit: "1mb" }));
 // URL-encoded middleware
 app.use(express.urlencoded({ extended: true }));
 
+// MongoDB sanitize
+app.use(
+  mongoSanitize({
+    // retire les clés qui commencent par $ et les chemins contenant .
+    replaceWith: "_",
+  })
+);
+
+// Prevent HTTP Parameter Pollution
+app.use(
+  hpp({
+    // whitelist: autorise certains params à être répétés si tu en as besoin
+    whitelist: ["mediaUrls"],
+  })
+);
+
+
 // Request ID for tracing
 app.use((req, res, next) => {
   req.id = crypto.randomUUID();
@@ -62,10 +86,6 @@ const format =
 
 app.use(morgan(format));
 
-// if behind a reverse proxy in production (render/heroku/nginx)
-if (process.env.NODE_ENV === "production") {
-  app.set("trust proxy", 1);
-}
 // Global rate limiter
 app.use(
   rateLimit({
@@ -100,13 +120,6 @@ app.get("/health", (req, res) => {
 app.use("/api", require("./routes"));
 app.use("/uploads", express.static(path.resolve(uploadsDir)));
 
-
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ message: "Route not found" });
-});
-
 // CORS error handler
 app.use((err, req, res, next) => {
   if (err && err.message === "Not allowed by CORS") {
@@ -115,6 +128,10 @@ app.use((err, req, res, next) => {
   return next(err);
 });
 
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
 
 // Error-handling MW
 app.use((err, req, res, next) => {
@@ -162,7 +179,7 @@ app.use((err, req, res, next) => {
   return res.status(status).json({
     message,
     code,
-    requestId: req.id,
+    requestId: req.id || null,
     ...(details ? { details } : {}),
   });
 });
