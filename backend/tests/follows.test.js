@@ -46,7 +46,7 @@ describe("Follows", () => {
 
     // A lists received requests (IMPORTANT: correct URL in your API)
     const myReq = await request(app)
-      .get("/api/follow-requests")
+      .get("/api/follows/follow-requests")
       .set(bearer(tokenA));
 
     expect(myReq.statusCode).toBe(200);
@@ -59,14 +59,14 @@ describe("Follows", () => {
 
     // A accepts (IMPORTANT: correct URL in your API)
     const accept = await request(app)
-      .post(`/api/follow-requests/${requestId}/accept`)
+      .post(`/api/follows/follow-requests/${requestId}/accept`)
       .set(bearer(tokenA));
 
     expect(accept.statusCode).toBe(200);
 
     // B unfollows
     const unfollow = await request(app)
-      .delete(`/api/users/${userAId}/follow`)
+      .delete(`/api/follows/users/${userAId}/follow`)
       .set(bearer(tokenB));
 
     expect(unfollow.statusCode).toBe(200);

@@ -15,7 +15,7 @@ describe("Threads", () => {
     const tokenA = loginA.body.token;
 
     const threadRes = await request(app)
-      .post("/api")
+      .post("/api/threads")
       .set(bearer(tokenA))
       .send({ content: "hello", mediaUrls: [], visibility: "PUBLIC" });
 
@@ -32,7 +32,7 @@ describe("Threads", () => {
     const tokenB = loginB.body.token;
 
     const replyRes = await request(app)
-      .post(`/api/${threadId}/replies`)
+      .post(`/api/threads/${threadId}/replies`)
       .set(bearer(tokenB))
       .send({ content: "reply here" });
 
@@ -41,21 +41,21 @@ describe("Threads", () => {
 
     // B deletes its reply
     const delOwn = await request(app)
-      .delete(`/api/replies/${replyId}`)
+      .delete(`/api/threads/replies/${replyId}`)
       .set(bearer(tokenB));
 
     expect(delOwn.statusCode).toBe(200);
 
     // Re-create reply so A tries to delete B's reply (forbidden)
     const replyRes2 = await request(app)
-      .post(`/api/${threadId}/replies`)
+      .post(`/api/threads/${threadId}/replies`)
       .set(bearer(tokenB))
       .send({ content: "reply 2" });
 
     const replyId2 = replyRes2.body.reply.id;
 
     const delOther = await request(app)
-      .delete(`/api/replies/${replyId2}`)
+      .delete(`/api/threads/replies/${replyId2}`)
       .set(bearer(tokenA));
 
     expect(delOther.statusCode).toBe(403);
