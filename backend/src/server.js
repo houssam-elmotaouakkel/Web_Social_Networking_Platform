@@ -11,7 +11,7 @@ async function bootstrap() {
   await connectDB(process.env.MONGO_URI);
   
   const port = process.env.PORT || 4000;
-  const server = app.listen(port, () => {
+  const server = app.listen(port, "0.0.0.0", () => {
     console.log(`[SYS] API listening on port ${port}`);
   });
 
