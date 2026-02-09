@@ -39,4 +39,10 @@ router.patch( // PATCH http://localhost:4000/api/notifications/read-all
   asyncHandler(NotificationsController.markAllRead)
 );
 
+router.delete( // DELETE http://localhost:4000/api/notifications
+  "/",
+  authMiddleware,
+  asyncHandler(NotificationsController.deleteAll)
+);
+
 module.exports = router;

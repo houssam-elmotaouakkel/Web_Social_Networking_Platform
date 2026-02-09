@@ -16,4 +16,22 @@ async function me(req, res) {
   return res.status(200).json({ user });
 }
 
-module.exports = { register, login, me };
+async function changePassword(req, res) {
+  const result = await AuthService.changePassword({
+    userId: req.user.id,
+    ...req.body
+  });
+  return res.status(200).json(result);
+}
+
+async function forgotPassword(req, res) {
+  const result = await AuthService.forgotPassword(req.body);
+  return res.status(200).json(result);
+}
+
+async function resetPassword(req, res) {
+  const result = await AuthService.resetPassword(req.body);
+  return res.status(200).json(result);
+}
+
+module.exports = { register, login, me, changePassword, forgotPassword, resetPassword };

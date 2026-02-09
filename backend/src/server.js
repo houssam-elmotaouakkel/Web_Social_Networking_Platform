@@ -1,4 +1,8 @@
 // backend/src/server.js
+require("dotenv").config();
+const { validateEnv } = require("./config/env");
+validateEnv(); // fail-fast if critical vars are missing
+
 const app = require("./app");
 const {
   connectDB,

@@ -1,4 +1,5 @@
 const UsersService = require("../services/users.service");
+const ThreadsService = require("../services/threads.service");
 
 
 async function getProfile(req, res) {
@@ -40,9 +41,52 @@ async function uploadAvatar(req, res) {
 }
 
 
+async function uploadCover(req, res) {
+  if (!req.file) {
+    return res.status(400).json({ message: "No file uploaded" });
+  }
+
+  const coverUrl = `/uploads/${req.file.filename}`;
+  const user = await UsersService.updateCover({ userId: req.user.id, coverUrl });
+  return res.status(200).json({ user });
+}
+
+
+async function searchUsers(req, res) {
+  const { q, limit } = req.query;
+  const users = await UsersService.searchUsers({
+    query: q,
+    limit: limit ? parseInt(limit) : 10,
+    viewerId: req.user.id,
+  });
+  return res.status(200).json({ users });
+}
+
+async function getSuggestedUsers(req, res) {
+  const { limit } = req.query;
+  const users = await UsersService.getSuggestedUsers({
+    userId: req.user.id,
+    limit: limit ? parseInt(limit) : 5,
+  });
+  return res.status(200).json({ users });
+}
+
+async function getUserThreads(req, res) {
+  const threads = await ThreadsService.getUserThreads({
+    viewerId: req.user.id,
+    authorId: req.params.userId,
+    limit: req.query.limit ? parseInt(req.query.limit) : 30,
+  });
+  return res.status(200).json({ threads });
+}
+
 module.exports = {
   updatePrivacy,
   uploadAvatar,
+  uploadCover,
   getProfile,
   updateMe,
+  searchUsers,
+  getSuggestedUsers,
+  getUserThreads,
 };

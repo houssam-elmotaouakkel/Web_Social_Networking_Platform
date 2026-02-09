@@ -50,11 +50,11 @@ describe("Follows", () => {
       .set(bearer(tokenA));
 
     expect(myReq.statusCode).toBe(200);
-    expect(myReq.body).toHaveProperty("requests");
-    expect(myReq.body.requests.length).toBeGreaterThan(0);
+    expect(myReq.body).toHaveProperty("items");
+    expect(myReq.body.items.length).toBeGreaterThan(0);
 
     // the API returns requestId (not id)
-    const requestId = myReq.body.requests[0].requestId;
+    const requestId = myReq.body.items[0].requestId;
 
 
     // A accepts (IMPORTANT: correct URL in your API)

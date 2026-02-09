@@ -3,11 +3,32 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
-require("dotenv").config();
 const rateLimit = require("express-rate-limit");
 const path = require("path");
 const crypto = require("node:crypto");
-const mongoSanitize = require("@exortek/express-mongo-sanitize");
+// Custom mongo sanitize (express-mongo-sanitize is incompatible with Express 5)
+function sanitizeObject(obj) {
+  if (typeof obj !== 'object' || obj === null) return obj;
+  if (Array.isArray(obj)) return obj.map(sanitizeObject);
+  const clean = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const safeKey = key.replace(/[\$\.]/g, '_');
+    clean[safeKey] = typeof value === 'object' ? sanitizeObject(value) : value;
+  }
+  return clean;
+}
+function mongoSanitize() {
+  return (req, _res, next) => {
+    if (req.body) req.body = sanitizeObject(req.body);
+    if (req.params) {
+      for (const [k, v] of Object.entries(req.params)) {
+        const sk = k.replace(/[\$\.]/g, '_');
+        if (sk !== k) { req.params[sk] = v; delete req.params[k]; }
+      }
+    }
+    next();
+  };
+}
 const hpp = require("hpp");
 const { mountSwagger } = require("./docs/swagger");
 const uploadsDir = process.env.UPLOAD_DIR || "uploads";
@@ -44,6 +65,7 @@ app.use(
     credentials: false, // JWT in Authorization header -> no cookies needed
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    optionsSuccessStatus: 204,
   })
 );  
 
@@ -58,13 +80,9 @@ if (process.env.NODE_ENV !== "production") {
 // URL-encoded middleware
 app.use(express.urlencoded({ extended: true }));
 
-// MongoDB sanitize
-app.use(
-  mongoSanitize({
-    // retire les clés qui commencent par $ et les chemins contenant .
-    replaceWith: "_",
-  })
-);
+// MongoDB sanitize — sanitizes keys starting with $ or containing .
+// Compatible with Express 5 (doesn't touch req.query which is read-only)
+app.use(mongoSanitize());
 
 // Prevent HTTP Parameter Pollution
 app.use(
@@ -118,13 +136,32 @@ app.get('/', (req, res) => {
 });
 
 // Health check
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok", uptime: process.uptime() });
+app.get("/health", async (req, res) => {
+  const mongoose = require("mongoose");
+  const dbState = mongoose.connection.readyState; // 0=disconnected, 1=connected, 2=connecting, 3=disconnecting
+  const dbOk = dbState === 1;
+
+  const payload = {
+    status: dbOk ? "ok" : "degraded",
+    uptime: process.uptime(),
+    db: dbOk ? "connected" : "disconnected",
+  };
+
+  return res.status(dbOk ? 200 : 503).json(payload);
 });
 
 
 app.use("/api", require("./routes"));
-app.use("/uploads", express.static(path.resolve(uploadsDir)));
+app.use("/uploads", express.static(path.resolve(uploadsDir), {
+  maxAge: "7d",                     // browser cache for 7 days (immutable filenames)
+  immutable: true,                  // filenames are unique (timestamp-based)
+  etag: true,
+  lastModified: true,
+  setHeaders(res) {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Content-Security-Policy", "default-src 'none'");
+  },
+}));
 
 // CORS error handler
 app.use((err, req, res, next) => {
@@ -175,6 +212,19 @@ app.use((err, req, res, next) => {
     code = "DUPLICATE_KEY";
     message = "Duplicate value";
     details = err.keyValue || undefined;
+  }
+
+  // Multer errors -> 400
+  if (err.name === "MulterError") {
+    status = 400;
+    code = "UPLOAD_ERROR";
+    if (err.code === "LIMIT_FILE_SIZE") {
+      message = "File too large";
+    } else if (err.code === "LIMIT_UNEXPECTED_FILE") {
+      message = "Unexpected file field";
+    } else {
+      message = err.message || "Upload error";
+    }
   }
 
   const isProd = process.env.NODE_ENV === "production";

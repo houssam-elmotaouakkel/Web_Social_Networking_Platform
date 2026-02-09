@@ -2,7 +2,10 @@
 const mongoose = require("mongoose");
 const Thread = require("../models/Thread.model");
 const Follow = require("../models/Follow.model");
+const User = require("../models/User.model");
 const StatsService = require("./stats.service");
+const SavesService = require("./saves.service");
+const RepostsService = require("./reposts.service");
 
 
 function parseCursor(cursor) {
@@ -39,12 +42,14 @@ async function getFeed({ userId, limit, cursor }) {
   }).select("followingId");
 
   const allowedAuthors = [new mongoose.Types.ObjectId(userId)];
-  for (const f of following) allowedAuthors.add(f.followingId.toString());
+  for (const f of following) allowedAuthors.push(f.followingId);
 
   const baseFilter = {
+    archivedAt: null,
     $or: [
       { visibility: "PUBLIC" },
       { visibility: "FOLLOWERS", authorId: { $in: allowedAuthors } },
+      { visibility: "PRIVATE", authorId: new mongoose.Types.ObjectId(userId) },
     ],
   };
 
@@ -69,7 +74,23 @@ async function getFeed({ userId, limit, cursor }) {
   const items = hasNext ? docs.slice(0, limit) : docs;
 
   const nextCursor = hasNext ? makeCursor(items[items.length - 1]) : null;
-  const statsMap = await StatsService.getThreadStats(items.map((t) => t._id.toString()));
+  const threadIds = items.map((t) => t._id.toString());
+  const [statsMap, likedSet, savedSet, repostedSet, repostCountsMap] = await Promise.all([
+    StatsService.getThreadStats(threadIds),
+    StatsService.getLikedByUser(userId, "THREAD", threadIds),
+    SavesService.getSavedByUser(userId, threadIds),
+    RepostsService.getRepostedByUser(userId, threadIds),
+    RepostsService.getRepostCounts(threadIds),
+  ]);
+
+  // Resolve authors in one batch query
+  const authorIds = [...new Set(items.map((t) => t.authorId.toString()))];
+  const authorDocs = await User.find({ _id: { $in: authorIds } })
+    .select("_id username avatarUrl")
+    .lean();
+  const authorMap = Object.fromEntries(
+    authorDocs.map((u) => [u._id.toString(), { username: u.username, avatarUrl: u.avatarUrl }])
+  );
 
   return {
     items: items.map((t) => {
@@ -77,6 +98,7 @@ async function getFeed({ userId, limit, cursor }) {
       return {
         id: t._id.toString(),
         authorId: t.authorId.toString(),
+        author: authorMap[t.authorId.toString()] || null,
         content: t.content,
         mediaUrls: t.mediaUrls,
         visibility: t.visibility,
@@ -84,6 +106,10 @@ async function getFeed({ userId, limit, cursor }) {
         updatedAt: t.updatedAt,
         likesCount: s.likesCount,
         repliesCount: s.repliesCount,
+        repostsCount: repostCountsMap[t._id.toString()] || 0,
+        likedByMe: likedSet.has(t._id.toString()),
+        savedByMe: savedSet.has(t._id.toString()),
+        repostedByMe: repostedSet.has(t._id.toString()),
       };
     }),
     nextCursor,

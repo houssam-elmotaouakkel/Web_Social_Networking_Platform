@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/nexora-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Nexora — A modern social networking platform to share threads, follow people, and stay connected." />
+    <meta name="theme-color" content="#a855f7" />
+    <meta property="og:title" content="Nexora" />
+    <meta property="og:description" content="A modern social networking platform to share threads, follow people, and stay connected." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="/" />
+    <title>Nexora</title>
+    <script>
+      // Prevent flash: apply saved theme & language direction before render
+      (function() {
+        var t = localStorage.getItem('theme') || 'dark';
+        if (t === 'auto') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+        var lang = localStorage.getItem('lang');
+        if (lang) {
+          document.documentElement.lang = lang;
+          document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

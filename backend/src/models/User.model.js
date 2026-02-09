@@ -19,9 +19,18 @@ const UserSchema = new mongoose.Schema(
       index: true,
     },
     passwordHash: { type: String, required: true },
+    passwordChangedAt: { type: Date, default: null },
+    resetPasswordToken: { type: String, default: null },
+    resetPasswordExpires: { type: Date, default: null },
     bio: { type: String, default: "" },
     avatarUrl: { type: String, default: "" },
+    coverUrl: { type: String, default: "" },
     isPrivate: { type: Boolean, default: false },
+    defaultVisibility: {
+      type: String,
+      enum: ["PUBLIC", "FOLLOWERS", "PRIVATE"],
+      default: "PUBLIC",
+    },
     settings: {
       notificationsPrefs: {
         followRequest: { type: Boolean, default: true },

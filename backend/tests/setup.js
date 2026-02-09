@@ -1,3 +1,4 @@
+require("dotenv").config({ quiet: true });
 const { connectDB, disconnectDB, resetTestDB } = require("../src/config/database");
 
 beforeAll(async () => {

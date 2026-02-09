@@ -20,7 +20,11 @@ const createThreadSchema = z.object({
     .optional()
     .default([]),
 
-  visibility: z.enum(["PUBLIC", "FOLLOWERS"]).optional().default("PUBLIC"),
+  visibility: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]).optional().default("PUBLIC"),
+});
+
+const updateVisibilitySchema = z.object({
+  visibility: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]),
 });
 
 
@@ -28,4 +32,13 @@ const threadIdParamsSchema = z.object({
   threadId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId"),
 });
 
-module.exports = { createThreadSchema, threadIdParamsSchema };
+const trendingQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(20).optional(),
+});
+
+const repliesQuerySchema = z.object({
+  cursor: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(20),
+});
+
+module.exports = { createThreadSchema, threadIdParamsSchema, trendingQuerySchema, updateVisibilitySchema, repliesQuerySchema };

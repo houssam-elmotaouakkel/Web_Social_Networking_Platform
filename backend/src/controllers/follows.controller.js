@@ -18,8 +18,13 @@ async function unfollowUser(req, res) {
 
 async function getMyRequests(req, res) {
   const userId = req.user.id;
-  const data = await FollowsService.listMyFollowRequests({ userId });
-  return res.status(200).json({ requests: data });
+  const { cursor, limit } = req.query;
+  const data = await FollowsService.listMyFollowRequests({
+    userId,
+    cursor,
+    limit: limit ? Number(limit) : undefined,
+  });
+  return res.status(200).json(data);
 }
 
 async function accept(req, res) {
@@ -38,10 +43,41 @@ async function reject(req, res) {
   return res.status(200).json(data);
 }
 
+// --- Functions merged from followsExtra.controller.js ---
+
+async function followers(req, res) {
+  const viewerId = req.user.id;
+  const userId = req.params.userId;
+  const { limit, cursor } = req.query;
+
+  const data = await FollowsService.listFollowers({ viewerId, userId, limit, cursor });
+  return res.status(200).json(data);
+}
+
+async function following(req, res) {
+  const viewerId = req.user.id;
+  const userId = req.params.userId;
+  const { limit, cursor } = req.query;
+
+  const data = await FollowsService.listFollowing({ viewerId, userId, limit, cursor });
+  return res.status(200).json(data);
+}
+
+async function followStatus(req, res) {
+  const followerId = req.user.id;
+  const targetUserId = req.params.userId;
+
+  const data = await FollowsService.getFollowStatus({ followerId, targetUserId });
+  return res.status(200).json(data);
+}
+
 module.exports = {
-    followUser,
-    unfollowUser,
-    getMyRequests,  
-    accept,
-    reject
+  followUser,
+  unfollowUser,
+  getMyRequests,
+  accept,
+  reject,
+  followers,
+  following,
+  followStatus,
 };

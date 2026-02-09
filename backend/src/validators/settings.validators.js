@@ -2,6 +2,7 @@
 const { z } = require("zod");
 
 const updateSettingsSchema = z.object({
+  defaultVisibility: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]).optional(),
   notificationsPrefs: z
     .object({
       followRequest: z.boolean().optional(),

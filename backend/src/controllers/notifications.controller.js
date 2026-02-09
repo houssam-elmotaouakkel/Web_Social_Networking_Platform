@@ -28,4 +28,9 @@ async function unreadCount(req, res) {
   return res.status(200).json(data);
 }
 
-module.exports = { list, markRead, markAllRead, unreadCount };
+async function deleteAll(req, res) {
+  const data = await NotificationsService.deleteAll({ userId: req.user.id });
+  return res.status(200).json(data);
+}
+
+module.exports = { list, markRead, markAllRead, unreadCount, deleteAll };

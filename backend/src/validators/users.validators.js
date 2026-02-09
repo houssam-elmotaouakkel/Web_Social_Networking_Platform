@@ -16,4 +16,13 @@ const updateMeSchema = z.object({
   bio: z.string().trim().max(300).optional(),
 });
 
-module.exports = { userIdParamsSchema, updatePrivacySchema, updateMeSchema };
+const searchQuerySchema = z.object({
+  q: z.string().min(1).max(50),
+  limit: z.coerce.number().int().min(1).max(50).optional(),
+});
+
+const suggestionsQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(20).optional(),
+});
+
+module.exports = { userIdParamsSchema, updatePrivacySchema, updateMeSchema, searchQuerySchema, suggestionsQuerySchema };

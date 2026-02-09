@@ -61,6 +61,7 @@ async function createOnce({ userId, actorId, type, entityType, entityId, meta = 
 
 
 async function list({ userId, limit, cursor }) {
+  const baseFilter = { userId };
   const c = cursor ? parseCursor(cursor) : null;
   const cursorFilter = c
     ? {
@@ -71,7 +72,7 @@ async function list({ userId, limit, cursor }) {
       }
     : null;
 
-  const filter = cursorFilter ? { userId, ...cursorFilter } : { userId };
+  const filter = cursorFilter ? { $and: [baseFilter, cursorFilter] } : baseFilter;
 
   const docs = await Notification.find(filter)
     .sort({ createdAt: -1, _id: -1 })
@@ -82,11 +83,21 @@ async function list({ userId, limit, cursor }) {
   const items = hasNext ? docs.slice(0, limit) : docs;
   const nextCursor = hasNext ? makeCursor(items[items.length - 1]) : null;
 
+  // Batch-resolve actor info
+  const actorIds = [...new Set(items.map((n) => n.actorId.toString()))];
+  const actorDocs = actorIds.length > 0
+    ? await User.find({ _id: { $in: actorIds } }).select("_id username avatarUrl").lean()
+    : [];
+  const actorMap = Object.fromEntries(
+    actorDocs.map((u) => [u._id.toString(), { username: u.username, avatarUrl: u.avatarUrl }])
+  );
+
   return {
     items: items.map((n) => ({
       id: n._id.toString(),
       userId: n.userId.toString(),
       actorId: n.actorId.toString(),
+      actor: actorMap[n.actorId.toString()] || null,
       type: n.type,
       entityType: n.entityType,
       entityId: n.entityId.toString(),
@@ -122,6 +133,11 @@ async function markAllRead({ userId }) {
 async function getUnreadCount({ userId }) {
   const unreadCount = await Notification.countDocuments({ userId, isRead: false });
   return { unreadCount };
-} 
+}
 
-module.exports = { createOnce, list, markRead, markAllRead, getUnreadCount };
+async function deleteAll({ userId }) {
+  const result = await Notification.deleteMany({ userId });
+  return { message: "All notifications deleted", deletedCount: result.deletedCount };
+}
+
+module.exports = { createOnce, list, markRead, markAllRead, getUnreadCount, deleteAll };

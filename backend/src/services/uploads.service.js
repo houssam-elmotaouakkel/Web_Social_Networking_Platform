@@ -30,7 +30,22 @@ async function deleteMedia({ userId, filename }) {
     throw err;
   }
 
-  // 1) Remove file if exists
+  const urlPath = `/uploads/${filename}`;
+
+  // 1) Verify ownership: the file must belong to the user (avatar, cover or thread media)
+  const [ownsAsAvatar, ownsAsCover, ownsAsMedia] = await Promise.all([
+    User.exists({ _id: userId, avatarUrl: urlPath }),
+    User.exists({ _id: userId, coverUrl: urlPath }),
+    Thread.exists({ authorId: userId, mediaUrls: urlPath }),
+  ]);
+
+  if (!ownsAsAvatar && !ownsAsCover && !ownsAsMedia) {
+    const err = new Error("Not authorized to delete this file");
+    err.status = 403;
+    throw err;
+  }
+
+  // 2) Remove file if exists
   try {
     await fs.unlink(absolutePath);
   } catch (e) {
@@ -43,11 +58,10 @@ async function deleteMedia({ userId, filename }) {
     throw e;
   }
 
-  const urlPath = `/uploads/${filename}`;
-
   // 2) Cleanup DB references owned by the user
   await Promise.all([
     User.updateOne({ _id: userId, avatarUrl: urlPath }, { $set: { avatarUrl: null } }),
+    User.updateOne({ _id: userId, coverUrl: urlPath }, { $set: { coverUrl: null } }),
     Thread.updateMany(
       { authorId: userId, mediaUrls: urlPath },
       { $pull: { mediaUrls: urlPath } }

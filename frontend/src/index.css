@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+/* ─── Custom Theme: Dark (default) ─── */
+@theme {
+  --color-bg-primary: #000000;
+  --color-bg-secondary: #0a0a0a;
+  --color-bg-card: #111111;
+  --color-bg-hover: #1a1a1a;
+  --color-bg-input: #1e1e1e;
+  --color-border: #2a2a2a;
+  --color-border-light: #333333;
+  --color-text-primary: #f5f5f5;
+  --color-text-secondary: #888888;
+  --color-text-muted: #555555;
+  --color-accent: #a855f7;
+  --color-accent-hover: #c084fc;
+  --color-accent-start: #06d6f5;
+  --color-accent-end: #e040fb;
+  --color-like: #f91880;
+  --color-like-hover: #ff3399;
+  --color-success: #00ba7c;
+  --color-warning: #ffad1f;
+  --color-danger: #f4212e;
+  --color-danger-hover: #ff4444;
+}
+
+/* ─── Light Theme Override ─── */
+[data-theme="light"] {
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f7f9fa;
+  --color-bg-card: #ffffff;
+  --color-bg-hover: #f0f2f5;
+  --color-bg-input: #eff3f4;
+  --color-border: #e1e4e8;
+  --color-border-light: #d0d7de;
+  --color-text-primary: #0f1419;
+  --color-text-secondary: #536471;
+  --color-text-muted: #8899a6;
+  --color-accent: #9333ea;
+  --color-accent-hover: #7e22ce;
+  --color-accent-start: #06b6d4;
+  --color-accent-end: #d946ef;
+  --color-like: #f91880;
+  --color-like-hover: #e0136f;
+  --color-success: #00ba7c;
+  --color-warning: #e68a00;
+  --color-danger: #f4212e;
+  --color-danger-hover: #d91c27;
+}
+
+/* ─── Brand gradient utilities ─── */
+.bg-gradient-brand {
+  background: linear-gradient(135deg, var(--color-accent-start), var(--color-accent), var(--color-accent-end));
+}
+
+.bg-gradient-brand-hover {
+  background: linear-gradient(135deg, var(--color-accent-start), var(--color-accent-hover), var(--color-accent-end));
+}
+
+.text-gradient-brand {
+  background: linear-gradient(135deg, var(--color-accent-start), var(--color-accent), var(--color-accent-end));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.border-gradient-brand {
+  border-image: linear-gradient(135deg, var(--color-accent-start), var(--color-accent), var(--color-accent-end)) 1;
+}
+
+/* ─── Base ─── */
+body {
+  @apply bg-bg-primary text-text-primary antialiased;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-full;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+/* ─── Transitions (only on interactive elements to avoid scroll jank) ─── */
+button, a, input, select, textarea,
+[role="button"], [tabindex] {
+  @apply transition-colors duration-150;
+}
+
+/* ─── Links ─── */
+a {
+  @apply text-accent hover:text-accent-hover no-underline;
+}

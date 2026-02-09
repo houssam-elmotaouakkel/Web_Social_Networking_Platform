@@ -11,7 +11,14 @@ module.exports = function validateQuery(schema) {
         })),
       });
     }
-    req.query = result.data;
+    // Express 5 defines req.query as a getter; plain assignment may silently fail.
+    // Use Object.defineProperty to ensure the validated data is stored.
+    Object.defineProperty(req, 'query', {
+      value: result.data,
+      writable: true,
+      configurable: true,
+      enumerable: true,
+    });
     next();
   };
 };
