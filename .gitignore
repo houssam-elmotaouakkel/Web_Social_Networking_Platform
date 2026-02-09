@@ -48,5 +48,8 @@ Project_Structure.txt
 # Uploads directory
 uploads/
 
+# Archives
+*.zip
+
 # documentation
 Rabat_Projet FS.pdf

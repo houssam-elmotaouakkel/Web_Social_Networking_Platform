@@ -1,11 +1,12 @@
-# 🚀 Backend API - Plateforme de Réseau Social
+# Nexora — Backend API
 
-> API RESTful Node.js/Express pour la plateforme de réseau social web
+> API RESTful Node.js/Express pour la plateforme de réseau social **Nexora**
 
 ![Node.js](https://img.shields.io/badge/Node.js-20-green?logo=node.js)
-![Express](https://img.shields.io/badge/Express-5.x-blue?logo=express)
+![Express](https://img.shields.io/badge/Express-5.2-blue?logo=express)
 ![MongoDB](https://img.shields.io/badge/MongoDB-7-green?logo=mongodb)
 ![JWT](https://img.shields.io/badge/Auth-JWT-orange)
+![Zod](https://img.shields.io/badge/Validation-Zod_4-3E67B1)
 
 ---
 
@@ -27,21 +28,22 @@
 ```
 backend/
 ├── src/
-│   ├── config/              # Configuration (DB, multer, env)
-│   ├── constants/           # Constantes et enums
+│   ├── config/              # Configuration (DB, multer, env, mailer)
 │   ├── controllers/         # Logique HTTP (req/res)
+│   ├── docs/                # OpenAPI / Swagger UI
 │   ├── middlewares/         # Auth, validation, rate-limit
-│   ├── models/              # Schémas Mongoose
-│   ├── repositories/        # Accès DB centralisé
+│   ├── models/              # Schémas Mongoose (8 modèles)
 │   ├── routes/              # Endpoints Express
 │   ├── services/            # Logique métier
-│   ├── utils/               # Helpers (asyncHandler, etc.)
+│   ├── utils/               # Helpers (asyncHandler, toPublicUser, etc.)
 │   ├── validators/          # Schémas Zod
 │   ├── app.js               # Configuration Express
 │   └── server.js            # Point d'entrée
-├── tests/                   # Tests Jest
+├── tests/                   # Tests Jest + Supertest
 ├── uploads/                 # Stockage des fichiers uploadés
-├── Dockerfile               # Image Docker
+├── Dockerfile               # Image Docker (node:20-alpine)
+├── .env.example             # Template des variables d'environnement
+├── .env.docker              # Variables pour Docker Compose
 └── package.json
 ```
 
@@ -51,22 +53,30 @@ backend/
 
 | Package | Version | Description |
 |---------|---------|-------------|
-| **express** | 5.x | Framework web |
-| **mongoose** | 9.x | ODM MongoDB |
+| **express** | 5.2 | Framework web |
+| **mongoose** | 9.1 | ODM MongoDB |
 | **jsonwebtoken** | 9.x | Authentification JWT |
 | **bcryptjs** | 3.x | Hashage des mots de passe |
 | **zod** | 4.x | Validation de schémas |
 | **multer** | 2.x | Upload de fichiers |
-| **helmet** | 8.x | Sécurité HTTP headers |
+| **helmet** | 8.x | En-têtes de sécurité HTTP |
 | **cors** | 2.x | Cross-Origin Resource Sharing |
+| **hpp** | 0.2 | Protection HTTP Parameter Pollution |
+| **express-mongo-sanitize** | 2.x | Sanitization NoSQL injection |
 | **morgan** | 1.x | Logging HTTP |
 | **express-rate-limit** | 8.x | Rate limiting |
+| **nodemailer** | 8.x | Envoi d'emails (forgot-password) |
+| **swagger-ui-express** | 5.x | Documentation Swagger UI |
 
 ### Dev Dependencies
-- **jest** - Tests unitaires
-- **supertest** - Tests API
-- **nodemon** - Hot reload
-- **eslint** / **prettier** - Linting et formatage
+
+| Package | Description |
+|---------|-------------|
+| **jest** 30 | Tests unitaires et d'intégration |
+| **supertest** 7 | Tests API HTTP |
+| **nodemon** | Hot reload en développement |
+| **cross-env** | Variables d'env cross-platform |
+| **eslint** / **prettier** | Linting et formatage |
 
 ---
 
@@ -79,15 +89,12 @@ backend/
 ### Installation locale
 
 ```bash
-# Cloner et accéder au dossier
 cd backend
-
-# Installer les dépendances
 npm install
 
 # Configurer l'environnement
 cp .env.example .env
-# Éditer .env avec vos valeurs
+# Éditer .env avec vos valeurs (MONGO_URI, JWT_SECRET, etc.)
 
 # Lancer en développement
 npm run dev
@@ -100,6 +107,7 @@ npm run dev
 docker-compose up -d
 
 # L'API sera disponible sur http://localhost:4000
+# La doc Swagger sur http://localhost:4000/api/docs
 ```
 
 ---
@@ -110,36 +118,31 @@ docker-compose up -d
 
 Créez un fichier `.env` basé sur `.env.example` :
 
-```env
-# Server
-NODE_ENV=development
-PORT=4000
-
-# Database
-MONGO_URI=mongodb://127.0.0.1:27017/social
-# Ou avec Docker: mongodb://root:rootpass@mongo:27017/social?authSource=admin
-
-# JWT
-JWT_SECRET=votre_secret_tres_long_et_aleatoire
-JWT_EXPIRES_IN=7d
-
-# Uploads
-UPLOAD_DIR=uploads
-MAX_FILE_SIZE_MB=10
-ALLOWED_IMAGE_MIME=image/jpeg,image/png,image/webp
-
-# CORS
-CORS_ORIGIN=http://localhost:5173
-
-# Logging
-LOG_LEVEL=info
-```
+| Variable | Description | Défaut |
+|----------|-------------|--------|
+| `NODE_ENV` | Environnement (`development` / `production` / `test`) | `development` |
+| `PORT` | Port du serveur | `4000` |
+| `MONGO_URI` | URI de connexion MongoDB | — |
+| `MONGO_URI_TEST` | URI MongoDB pour les tests | — |
+| `JWT_SECRET` | Clé secrète JWT (min 32 caractères) | — |
+| `JWT_EXPIRES_IN` | Durée de validité du token | `7d` |
+| `UPLOAD_DIR` | Dossier des uploads | `uploads` |
+| `MAX_FILE_SIZE_MB` | Taille max fichier (Mo) | `10` |
+| `ALLOWED_IMAGE_MIME` | Types MIME autorisés | `image/jpeg,image/png,image/webp` |
+| `CORS_ORIGINS` | Origines CORS autorisées (séparées par `,`) | `http://localhost:5173` |
+| `SMTP_HOST` | Serveur SMTP | — |
+| `SMTP_PORT` | Port SMTP | `587` |
+| `SMTP_USER` | Utilisateur SMTP | — |
+| `SMTP_PASS` | Mot de passe SMTP | — |
+| `LOG_LEVEL` | Niveau de log | `info` |
 
 ---
 
 ## 📡 Endpoints API
 
-Base URL: `http://localhost:4000/api`
+Base URL : `http://localhost:4000/api`
+
+Documentation interactive : `http://localhost:4000/api/docs` (Swagger UI)
 
 ### 🔐 Authentification (`/api/auth`)
 
@@ -148,70 +151,108 @@ Base URL: `http://localhost:4000/api`
 | `POST` | `/auth/register` | Inscription | ❌ |
 | `POST` | `/auth/login` | Connexion | ❌ |
 | `GET` | `/auth/me` | Profil utilisateur connecté | ✅ |
+| `PATCH` | `/auth/change-password` | Changer le mot de passe | ✅ |
+| `POST` | `/auth/forgot-password` | Demander un reset de mot de passe | ❌ |
+| `POST` | `/auth/reset-password` | Reset du mot de passe (avec token) | ❌ |
 
 ### 👤 Utilisateurs (`/api/users`)
 
 | Méthode | Endpoint | Description | Auth |
 |---------|----------|-------------|------|
-| `GET` | `/users/:userId` | Profil d'un utilisateur | ✅ |
-| `PATCH` | `/users/me` | Modifier son profil | ✅ |
-| `PATCH` | `/users/me/privacy` | Modifier ses paramètres de confidentialité | ✅ |
+| `GET` | `/users/search?q=xxx&limit=10` | Rechercher des utilisateurs | ✅ |
+| `GET` | `/users/suggestions?limit=5` | Utilisateurs suggérés | ✅ |
+| `PATCH` | `/users/me` | Modifier son profil (username, bio) | ✅ |
+| `PATCH` | `/users/me/privacy` | Modifier la confidentialité (isPrivate) | ✅ |
 | `POST` | `/users/me/avatar` | Uploader un avatar | ✅ |
+| `POST` | `/users/me/cover` | Uploader une photo de couverture | ✅ |
+| `GET` | `/users/:userId` | Profil d'un utilisateur | ✅ |
+| `GET` | `/users/:userId/threads` | Threads d'un utilisateur | ✅ |
 
 ### 📝 Threads (`/api/threads`)
 
 | Méthode | Endpoint | Description | Auth |
 |---------|----------|-------------|------|
 | `POST` | `/threads` | Créer un thread | ✅ |
-| `GET` | `/threads/:threadId` | Récupérer un thread avec ses réponses | ✅ |
+| `GET` | `/threads/trending?limit=5` | Threads tendance | ✅ |
+| `GET` | `/threads/me/archived` | Mes threads archivés | ✅ |
+| `GET` | `/threads/:threadId` | Thread + réponses (paginé par curseur) | ✅ |
 | `POST` | `/threads/:threadId/replies` | Répondre à un thread | ✅ |
 | `DELETE` | `/threads/:threadId` | Supprimer un thread | ✅ |
+| `DELETE` | `/threads/replies/:replyId` | Supprimer une réponse | ✅ |
+| `PATCH` | `/threads/:threadId/visibility` | Modifier la visibilité | ✅ |
+| `PATCH` | `/threads/:threadId/archive` | Archiver un thread | ✅ |
+| `PATCH` | `/threads/:threadId/unarchive` | Désarchiver un thread | ✅ |
 
-### 👥 Follows (`/api/`)
-
-| Méthode | Endpoint | Description | Auth |
-|---------|----------|-------------|------|
-| `POST` | `/users/:userId/follow` | Suivre un utilisateur | ✅ |
-| `DELETE` | `/users/:userId/follow` | Ne plus suivre | ✅ |
-| `GET` | `/users/:userId/followers` | Liste des followers | ✅ |
-| `GET` | `/users/:userId/following` | Liste des following | ✅ |
-| `GET` | `/follow-requests` | Demandes de follow reçues | ✅ |
-| `POST` | `/follow-requests/:requestId/accept` | Accepter une demande | ✅ |
-| `POST` | `/follow-requests/:requestId/reject` | Rejeter une demande | ✅ |
-
-### 👍 Réactions (`/api/`)
+### 👥 Follows (`/api/follows`)
 
 | Méthode | Endpoint | Description | Auth |
 |---------|----------|-------------|------|
-| `POST` | `/threads/:threadId/reactions` | Réagir à un thread | ✅ |
-| `DELETE` | `/threads/:threadId/reactions` | Supprimer sa réaction | ✅ |
+| `POST` | `/follows/users/:userId/follow` | Suivre un utilisateur | ✅ |
+| `DELETE` | `/follows/users/:userId/follow` | Ne plus suivre | ✅ |
+| `GET` | `/follows/users/:userId/status` | Statut follow (NONE/PENDING/ACCEPTED) | ✅ |
+| `GET` | `/follows/users/:userId/followers` | Liste des followers | ✅ |
+| `GET` | `/follows/users/:userId/following` | Liste des following | ✅ |
+| `GET` | `/follows/follow-requests` | Demandes de follow reçues | ✅ |
+| `POST` | `/follows/follow-requests/:requestId/accept` | Accepter une demande | ✅ |
+| `POST` | `/follows/follow-requests/:requestId/reject` | Rejeter une demande | ✅ |
 
-### 📰 Feed (`/api/`)
+### 👍 Réactions (`/api/reactions`)
 
 | Méthode | Endpoint | Description | Auth |
 |---------|----------|-------------|------|
-| `GET` | `/feed` | Fil d'actualité | ✅ |
+| `POST` | `/reactions/toggle-like` | Like/unlike (thread ou reply) | ✅ |
 
-### 🔔 Notifications (`/api/`)
+### 📰 Feed (`/api/feed`)
 
 | Méthode | Endpoint | Description | Auth |
 |---------|----------|-------------|------|
-| `GET` | `/notifications` | Liste des notifications | ✅ |
+| `GET` | `/feed?limit=20&cursor=...` | Fil d'actualité (paginé par curseur) | ✅ |
+
+### 🔔 Notifications (`/api/notifications`)
+
+| Méthode | Endpoint | Description | Auth |
+|---------|----------|-------------|------|
+| `GET` | `/notifications?limit=20&cursor=...` | Liste des notifications | ✅ |
+| `GET` | `/notifications/unread-count` | Nombre de non-lues | ✅ |
 | `PATCH` | `/notifications/:notificationId/read` | Marquer comme lue | ✅ |
 | `PATCH` | `/notifications/read-all` | Marquer toutes comme lues | ✅ |
+| `DELETE` | `/notifications` | Supprimer toutes | ✅ |
 
-### 📤 Uploads (`/api/`)
-
-| Méthode | Endpoint | Description | Auth |
-|---------|----------|-------------|------|
-| `POST` | `/upload` | Uploader un fichier | ✅ |
-
-### ⚙️ Paramètres (`/api/`)
+### 🔖 Sauvegardes (`/api/saves`)
 
 | Méthode | Endpoint | Description | Auth |
 |---------|----------|-------------|------|
-| `GET` | `/settings` | Récupérer les paramètres | ✅ |
-| `PATCH` | `/settings` | Modifier les paramètres | ✅ |
+| `GET` | `/saves` | Mes threads sauvegardés | ✅ |
+| `POST` | `/saves/:threadId` | Sauvegarder un thread | ✅ |
+| `DELETE` | `/saves/:threadId` | Retirer de la sauvegarde | ✅ |
+
+### 🔁 Reposts (`/api/reposts`)
+
+| Méthode | Endpoint | Description | Auth |
+|---------|----------|-------------|------|
+| `GET` | `/reposts` | Mes threads repostés | ✅ |
+| `POST` | `/reposts/:threadId` | Reposter un thread | ✅ |
+| `DELETE` | `/reposts/:threadId` | Retirer le repost | ✅ |
+
+### 📤 Uploads (`/api/uploads`)
+
+| Méthode | Endpoint | Description | Auth |
+|---------|----------|-------------|------|
+| `POST` | `/uploads/thread-media` | Uploader un média de thread | ✅ |
+| `DELETE` | `/uploads/:filename` | Supprimer un fichier uploadé | ✅ |
+
+### ⚙️ Paramètres (`/api/settings`)
+
+| Méthode | Endpoint | Description | Auth |
+|---------|----------|-------------|------|
+| `GET` | `/settings/me` | Récupérer mes paramètres | ✅ |
+| `PATCH` | `/settings/me` | Modifier mes paramètres | ✅ |
+
+### 🚩 Signalement (`/api/report`)
+
+| Méthode | Endpoint | Description | Auth |
+|---------|----------|-------------|------|
+| `POST` | `/report` | Signaler un problème (avec screenshot optionnel) | ✅ |
 
 ---
 
@@ -220,13 +261,26 @@ Base URL: `http://localhost:4000/api`
 ### User
 ```javascript
 {
-  username: String,       // Unique
-  email: String,          // Unique
-  password: String,       // Hashé avec bcrypt
-  displayName: String,
-  bio: String,
-  avatar: String,         // URL de l'image
-  isPrivate: Boolean,     // Compte privé
+  username: String,            // Unique, trimmed
+  email: String,               // Unique, lowercase, trimmed
+  passwordHash: String,        // Hashé avec bcrypt
+  passwordChangedAt: Date,     // null par défaut
+  resetPasswordToken: String,  // Token reset password
+  resetPasswordExpires: Date,  // Expiration du token
+  bio: String,                 // "" par défaut
+  avatarUrl: String,           // "" par défaut
+  coverUrl: String,            // "" par défaut
+  isPrivate: Boolean,          // false par défaut
+  defaultVisibility: String,   // enum: PUBLIC | FOLLOWERS | PRIVATE
+  settings: {
+    notificationsPrefs: {
+      followRequest: Boolean,  // true
+      followAccepted: Boolean, // true
+      reply: Boolean,          // true
+      likeThread: Boolean,     // true
+      likeReply: Boolean,      // true
+    }
+  },
   createdAt: Date,
   updatedAt: Date
 }
@@ -235,9 +289,11 @@ Base URL: `http://localhost:4000/api`
 ### Thread
 ```javascript
 {
-  author: ObjectId,       // Référence User
-  content: String,
-  visibility: String,     // 'public' | 'private'
+  authorId: ObjectId,      // ref User, indexé
+  content: String,         // max 2000 caractères
+  mediaUrls: [String],     // URLs des médias
+  visibility: String,      // enum: PUBLIC | FOLLOWERS | PRIVATE
+  archivedAt: Date,        // null par défaut
   createdAt: Date,
   updatedAt: Date
 }
@@ -246,42 +302,64 @@ Base URL: `http://localhost:4000/api`
 ### Reply
 ```javascript
 {
-  thread: ObjectId,       // Référence Thread
-  author: ObjectId,       // Référence User
-  content: String,
-  createdAt: Date
+  threadId: ObjectId,      // ref Thread
+  authorId: ObjectId,      // ref User
+  content: String,         // max 2000 caractères
+  createdAt: Date,
+  updatedAt: Date
 }
 ```
 
 ### Follow
 ```javascript
 {
-  follower: ObjectId,     // Qui suit
-  following: ObjectId,    // Qui est suivi
-  status: String,         // 'pending' | 'accepted'
-  createdAt: Date
+  followerId: ObjectId,    // Qui suit
+  followingId: ObjectId,   // Qui est suivi
+  status: String,          // enum: PENDING | ACCEPTED
+  createdAt: Date          // Index unique: (followerId, followingId)
 }
 ```
 
 ### Reaction
 ```javascript
 {
-  thread: ObjectId,       // Référence Thread
-  user: ObjectId,         // Référence User
-  type: String,           // 'like' | 'love' | etc.
-  createdAt: Date
+  userId: ObjectId,        // ref User
+  targetType: String,      // enum: THREAD | REPLY
+  targetId: ObjectId,      // ID du thread ou de la reply
+  type: String,            // enum: LIKE
+  createdAt: Date          // Index unique: (userId, targetType, targetId, type)
 }
 ```
 
 ### Notification
 ```javascript
 {
-  recipient: ObjectId,    // Destinataire
-  sender: ObjectId,       // Expéditeur
-  type: String,           // 'follow' | 'like' | 'reply' | etc.
-  thread: ObjectId,       // Optionnel
-  isRead: Boolean,
+  userId: ObjectId,        // Destinataire
+  actorId: ObjectId,       // Qui a déclenché
+  type: String,            // enum: FOLLOW_REQUEST | FOLLOW_ACCEPTED | REPLY | LIKE_THREAD | LIKE_REPLY
+  entityType: String,      // enum: FOLLOW | THREAD | REPLY
+  entityId: ObjectId,      // ID de l'entité concernée
+  isRead: Boolean,         // false par défaut
+  meta: Mixed,             // Payload flexible
   createdAt: Date
+}
+```
+
+### Save
+```javascript
+{
+  userId: ObjectId,        // ref User
+  threadId: ObjectId,      // ref Thread
+  createdAt: Date          // Index unique: (userId, threadId)
+}
+```
+
+### Repost
+```javascript
+{
+  userId: ObjectId,        // ref User
+  threadId: ObjectId,      // ref Thread
+  createdAt: Date          // Index unique: (userId, threadId)
 }
 ```
 
@@ -293,25 +371,35 @@ Base URL: `http://localhost:4000/api`
 |--------|----------------|
 | **Authentification** | JWT avec expiration configurable |
 | **Hashage** | bcryptjs pour les mots de passe |
-| **Validation** | Zod pour toutes les entrées |
-| **Rate Limiting** | 300 requêtes / 15 min |
-| **Headers** | Helmet pour les headers de sécurité |
-| **CORS** | Configuré pour le frontend |
+| **Validation** | Zod pour toutes les entrées (body, query, params) |
+| **Rate Limiting** | express-rate-limit (auth, uploads, écriture) |
+| **Headers** | Helmet pour les en-têtes de sécurité |
+| **CORS** | Origines configurables via `CORS_ORIGINS` |
+| **NoSQL Injection** | express-mongo-sanitize |
+| **HPP** | Prévention de la pollution de paramètres |
+| **Env Validation** | Fail-fast au démarrage si variables critiques manquantes |
 
 ---
 
 ## 🧪 Tests
 
 ```bash
-# Lancer tous les tests
+# Lancer tous les tests (5 suites, 8 tests)
 npm test
 
 # Lancer les tests en mode watch
 npm run test:watch
-
-# Couverture de code
-npm run test:coverage
 ```
+
+### Suites de tests
+
+| Suite | Tests | Couverture |
+|-------|-------|------------|
+| **health** | 2 | GET /health, GET / |
+| **auth** | 3 | register, login, me |
+| **follows** | 1 | follow request → accept → unfollow |
+| **threads** | 1 | create → reply → delete (owner + forbidden) |
+| **notifications** | 1 | unread-count → read-all |
 
 ---
 
@@ -319,24 +407,23 @@ npm run test:coverage
 
 | Script | Description |
 |--------|-------------|
-| `npm start` | Lancer en production |
+| `npm start` | Lancer en production (`node src/server.js`) |
 | `npm run dev` | Lancer avec nodemon (hot reload) |
 | `npm test` | Lancer les tests Jest |
+| `npm run test:watch` | Tests en mode watch |
+| `npm run test:ci` | Tests pour CI (--runInBand) |
 
 ---
 
 ## 🌐 Health Check
 
 ```bash
-# Vérifier que l'API fonctionne
 curl http://localhost:4000/health
-
-# Réponse attendue
-{"status":"ok","uptime":123.456}
+# → {"status":"ok","uptime":123.456}
 ```
 
 ---
 
 ## 👨‍💻 Auteur
 
-**Houssam El Motaouakkel** - [@houssam-elmotaouakkel](https://github.com/houssam-elmotaouakkel)
+**Houssam El Motaouakkel** — [@houssam-elmotaouakkel](https://github.com/houssam-elmotaouakkel)
