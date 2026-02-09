@@ -1,6 +1,0 @@
-# Render rewrite rules for SPA (React Router)
-# All routes that don't match a static file are rewritten to /index.html
-
-- source: /*
-  destination: /index.html
-  action: rewrite

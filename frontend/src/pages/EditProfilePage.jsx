@@ -13,6 +13,7 @@ import Toggle from '../components/ui/Toggle'
 import ImageViewerModal from '../components/ui/ImageViewerModal'
 import { Camera, Eye, Pencil } from 'lucide-react'
 import { USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH, BIO_MAX_LENGTH } from '../utils/constants'
+import { sanitizeMediaUrl } from '../utils/sanitizeUrl'
 
 export default function EditProfilePage() {
   const { user, updateUser } = useAuth()
@@ -37,11 +38,8 @@ export default function EditProfilePage() {
   const avatarFileRef = useRef(null)
   const coverFileRef = useRef(null)
 
-  const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:4000'
-  const avatarSrc = user?.avatarUrl
-    ? (user.avatarUrl.startsWith('http') ? user.avatarUrl : `${API_BASE}${user.avatarUrl}`)
-    : null
-  const coverSrc = user?.coverUrl ? `${API_BASE}${user.coverUrl}` : null
+  const avatarSrc = sanitizeMediaUrl(user?.avatarUrl)
+  const coverSrc = sanitizeMediaUrl(user?.coverUrl)
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
