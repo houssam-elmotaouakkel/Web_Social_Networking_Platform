@@ -1,5 +1,11 @@
-export const API_URL = '/api'
-export const UPLOADS_URL = '/uploads'
+export const API_URL = import.meta.env.VITE_API_URL || '/api'
+
+// Base URL of the backend server (for resolving relative paths like /uploads/...)
+export const BACKEND_URL = API_URL.endsWith('/api')
+  ? API_URL.slice(0, -4)   // 'https://xxx.onrender.com/api' → 'https://xxx.onrender.com'
+  : ''                     // '/api' (dev proxy) → '' (relative)
+
+export const UPLOADS_URL = `${BACKEND_URL}/uploads`
 
 export const THREAD_MAX_LENGTH = 2000
 export const BIO_MAX_LENGTH = 300

@@ -5,6 +5,8 @@
  * by restricting allowed protocols and providing a safe window.open wrapper.
  */
 
+import { BACKEND_URL } from './constants'
+
 const ALLOWED_PROTOCOLS = ['http:', 'https:']
 
 /**
@@ -26,11 +28,17 @@ export function isAllowedUrl(url) {
 }
 
 /**
- * Returns the URL if it passes validation, or an empty string otherwise.
- * Use as `<img src={sanitizeMediaUrl(url)} />`.
+ * Resolves a media URL.
+ * - Relative paths like `/uploads/xxx.jpg` are prefixed with BACKEND_URL
+ *   so they work in production where frontend and backend are on different domains.
+ * - Absolute http(s) URLs are returned as-is.
+ * - Invalid URLs return empty string.
  */
 export function sanitizeMediaUrl(url) {
-  return isAllowedUrl(url) ? url : ''
+  if (!isAllowedUrl(url)) return ''
+  // Prefix relative paths with the backend base URL
+  if (url.startsWith('/') && BACKEND_URL) return `${BACKEND_URL}${url}`
+  return url
 }
 
 /**

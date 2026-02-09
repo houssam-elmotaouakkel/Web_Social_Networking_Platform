@@ -8,6 +8,7 @@ import Button from '../ui/Button'
 import FollowButton from '../follows/FollowButton'
 import ImageViewerModal from '../ui/ImageViewerModal'
 import { fullDate } from '../../utils/formatDate'
+import { sanitizeMediaUrl } from '../../utils/sanitizeUrl'
 
 function useClickOutside(ref, handler) {
   useEffect(() => {
@@ -26,8 +27,6 @@ export default function ProfileHeader({ profile, access, followStatus, onFollowC
   const { t } = useTranslation()
   const isOwn = me?.id === profile.id
 
-  const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:4000'
-
   // Menu state
   const [coverMenuOpen, setCoverMenuOpen] = useState(false)
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false)
@@ -42,12 +41,8 @@ export default function ProfileHeader({ profile, access, followStatus, onFollowC
   useClickOutside(coverMenuRef, () => setCoverMenuOpen(false))
   useClickOutside(avatarMenuRef, () => setAvatarMenuOpen(false))
 
-  const avatarSrc = profile.avatarUrl
-    ? (profile.avatarUrl.startsWith('http') ? profile.avatarUrl : `${API_BASE}${profile.avatarUrl}`)
-    : null
-  const coverSrc = profile.coverUrl
-    ? `${API_BASE}${profile.coverUrl}`
-    : null
+  const avatarSrc = sanitizeMediaUrl(profile.avatarUrl)
+  const coverSrc = sanitizeMediaUrl(profile.coverUrl)
 
   const menuItemClass = `flex items-center gap-2.5 w-full px-3 py-2 text-sm text-text-primary
                           hover:bg-bg-hover rounded-lg transition-colors cursor-pointer`

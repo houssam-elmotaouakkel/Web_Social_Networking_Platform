@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { User } from 'lucide-react'
+import { sanitizeMediaUrl } from '../../utils/sanitizeUrl'
 
 const sizes = {
   sm: 'w-8 h-8 text-xs',
@@ -10,11 +11,12 @@ const sizes = {
 
 export default function Avatar({ src, username, size = 'md', className = '' }) {
   const [imgError, setImgError] = useState(false)
+  const resolvedSrc = sanitizeMediaUrl(src)
 
-  if (src && !imgError) {
+  if (resolvedSrc && !imgError) {
     return (
       <img
-        src={src}
+        src={resolvedSrc}
         alt={username || 'avatar'}
         onError={() => setImgError(true)}
         className={`${sizes[size]} rounded-full object-cover border border-border ${className}`}
