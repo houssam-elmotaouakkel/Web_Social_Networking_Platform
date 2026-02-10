@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Home, Bell, PenSquare, User, UserPlus } from 'lucide-react'
+import { Home, Bell, PenSquare, User, UserPlus, Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useBadges } from '../../hooks/useBadges'
 import { useCompose } from '../../contexts/ComposeContext'
@@ -11,7 +11,7 @@ export default function MobileNav() {
 
   const items = [
     { to: '/', icon: Home, badge: 0, label: t('nav.home') },
-    { to: '/follow-requests', icon: UserPlus, badge: requestCount, label: t('nav.requests') },
+    { to: '/search', icon: Search, badge: 0, label: t('nav.search') },
     { action: openCompose, icon: PenSquare, badge: 0, label: t('nav.compose') },
     { to: '/notifications', icon: Bell, badge: unreadNotifs, label: t('nav.notifications') },
     { to: '/profile', icon: User, badge: 0, label: t('nav.profile') },

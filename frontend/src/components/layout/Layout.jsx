@@ -8,7 +8,7 @@ import { ComposeProvider, useCompose } from '../../contexts/ComposeContext'
 import ComposeModal from '../threads/ComposeModal'
 
 function LayoutInner() {
-  const { expanded, collapsePanel } = usePanel()
+  const { expanded, collapsePanel, expandPanel } = usePanel()
   const { isOpen, closeCompose, onCreated } = useCompose()
   const { pathname } = useLocation()
   const showRightPanel = pathname === '/'
@@ -22,7 +22,8 @@ function LayoutInner() {
           className={`hidden md:flex shrink-0 sticky top-0 h-screen transition-all duration-300 ease-in-out ${
             expanded ? 'w-60' : 'w-17'
           }`}
-          onMouseLeave={() => expanded && collapsePanel()}
+          onMouseEnter={expandPanel}
+          onMouseLeave={collapsePanel}
         >
           <Sidebar />
         </aside>

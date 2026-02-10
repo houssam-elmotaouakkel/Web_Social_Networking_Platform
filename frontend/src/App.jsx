@@ -23,6 +23,7 @@ import DisplaySettingsPage from './pages/settings/DisplaySettingsPage'
 import ArchivedThreadsPage from './pages/settings/ArchivedThreadsPage'
 import SavedThreadsPage from './pages/SavedThreadsPage'
 import RepostedThreadsPage from './pages/RepostedThreadsPage'
+import SearchPage from './pages/SearchPage'
 import TermsOfServicePage from './pages/legal/TermsOfServicePage'
 import PrivacyPolicyPage from './pages/legal/PrivacyPolicyPage'
 import CookiePolicyPage from './pages/legal/CookiePolicyPage'
@@ -63,6 +64,7 @@ export default function App() {
             }
           >
             <Route path="/" element={<FeedPage />} />
+            <Route path="/search" element={<SearchPage />} />
             <Route path="/thread/:threadId" element={<ThreadDetailPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/saved" element={<SavedThreadsPage />} />

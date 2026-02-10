@@ -19,6 +19,7 @@
   },
   "nav": {
     "home": "Accueil",
+    "search": "Rechercher",
     "requests": "Demandes",
     "notifications": "Notifications",
     "profile": "Profil",

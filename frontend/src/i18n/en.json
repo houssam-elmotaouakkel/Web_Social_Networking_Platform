@@ -19,6 +19,7 @@
   },
   "nav": {
     "home": "Home",
+    "search": "Search",
     "requests": "Requests",
     "notifications": "Notifications",
     "profile": "Profile",

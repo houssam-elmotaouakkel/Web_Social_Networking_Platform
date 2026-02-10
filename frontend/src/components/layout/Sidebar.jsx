@@ -1,6 +1,6 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Home, Bell, User, Settings, LogOut, PenSquare, UserPlus, Bookmark, Repeat2 } from 'lucide-react'
+import { Home, Bell, User, Settings, PenSquare, UserPlus, Search, LogOut, Bookmark, Repeat2 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useBadges } from '../../hooks/useBadges'
 import { usePanel } from '../../contexts/PanelContext'
@@ -10,18 +10,28 @@ import nexoraIcon from '../../assets/nexora-icon.png'
 
 export default function Sidebar() {
   const { t } = useTranslation()
-  const { user, logout } = useAuth()
+  const { logout } = useAuth()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const { requestCount, unreadNotifs } = useBadges()
-  const { expanded, togglePanel } = usePanel()
+  const { expanded } = usePanel()
   const { openCompose } = useCompose()
 
+  const isHome = pathname === '/'
+
+  // Home: no Home/Search, show Saves/Reposts
+  // Other pages: show Home/Search, no Saves/Reposts
   const navItems = [
-    { to: '/', icon: Home, label: t('nav.home') },
+    ...(!isHome ? [
+      { to: '/', icon: Home, label: t('nav.home') },
+      { to: '/search', icon: Search, label: t('nav.search') },
+    ] : []),
     { to: '/follow-requests', icon: UserPlus, label: t('nav.requests'), badge: requestCount },
     { to: '/notifications', icon: Bell, label: t('nav.notifications'), badge: unreadNotifs },
-    { to: '/saved', icon: Bookmark, label: t('nav.saved') },
-    { to: '/reposts', icon: Repeat2, label: t('nav.reposts') },
+    ...(isHome ? [
+      { to: '/saved', icon: Bookmark, label: t('nav.saved') },
+      { to: '/reposts', icon: Repeat2, label: t('nav.reposts') },
+    ] : []),
     { to: '/profile', icon: User, label: t('nav.profile') },
     { to: '/settings', icon: Settings, label: t('nav.settings') },
   ]
@@ -33,9 +43,9 @@ export default function Sidebar() {
 
   return (
     <nav className="flex flex-col h-full w-full py-4 px-2 transition-all duration-300">
-      {/* Logo — click to toggle sidebar expand/collapse */}
+      {/* Logo — always visible, click navigates to home */}
       <div className="mb-6 px-2">
-        <button onClick={togglePanel} className="cursor-pointer w-full">
+        <button onClick={() => navigate('/')} className="cursor-pointer w-full">
           {expanded ? (
             <img src={nexoraLogo} alt="Nexora" className="h-8 object-contain object-left" />
           ) : (
@@ -92,7 +102,7 @@ export default function Sidebar() {
         </button>
       )}
 
-      {/* User & Logout */}
+      {/* Logout */}
       <div className="border-t border-border pt-3">
         <button
           onClick={handleLogout}
