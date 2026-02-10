@@ -1,7 +1,5 @@
 // backend/src/services/report.service.js
 const { transporter, FROM } = require("../config/mailer");
-const path = require("path");
-const fs = require("fs");
 
 const REPORT_TO = process.env.REPORT_EMAIL || process.env.SMTP_USER;
 
@@ -13,9 +11,10 @@ async function sendReport({ userId, username, email, message, file }) {
   const attachments = [];
 
   if (file) {
+    // multer memoryStorage — file.buffer contains the data
     attachments.push({
       filename: file.originalname,
-      path: file.path,
+      content: file.buffer,
     });
   }
 
@@ -46,11 +45,6 @@ async function sendReport({ userId, username, email, message, file }) {
     `,
     attachments,
   });
-
-  // Clean up uploaded file after sending
-  if (file && fs.existsSync(file.path)) {
-    fs.unlink(file.path, () => {});
-  }
 
   return { messageId: info.messageId };
 }

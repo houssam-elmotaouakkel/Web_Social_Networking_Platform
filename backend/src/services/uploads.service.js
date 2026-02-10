@@ -1,36 +1,24 @@
-const fs = require("fs/promises");
-const path = require("path");
-
 const User = require("../models/User.model");
 const Thread = require("../models/Thread.model");
+const { deleteByPublicId, publicIdFromUrl } = require("../config/cloudinary");
 
-function isSafeFilename(filename) {
-  // Refuse path traversal and path separators
-  if (!filename) return false;
-  if (filename.includes("..")) return false;
-  if (filename.includes("/") || filename.includes("\\")) return false;
-  return true;
-}
-
+/**
+ * Delete a media file.
+ * Accepts either:
+ *  - A Cloudinary URL (https://res.cloudinary.com/...)
+ *  - A legacy local filename (old /uploads/xxx.jpg references)
+ *
+ * The :filename route param is kept for backward compat — the frontend
+ * can also send a full Cloudinary URL encoded in the body or query.
+ */
 async function deleteMedia({ userId, filename }) {
-  if (!isSafeFilename(filename)) {
-    const err = new Error("Invalid filename");
-    err.status = 400;
-    throw err;
+  // Build the URL to search in DB — could be a full Cloudinary URL or legacy /uploads/ path
+  let urlPath;
+  if (filename.startsWith("http")) {
+    urlPath = filename;
+  } else {
+    urlPath = filename.startsWith("/uploads/") ? filename : `/uploads/${filename}`;
   }
-
-  const uploadsDir = process.env.UPLOAD_DIR || "uploads";
-  const absolutePath = path.resolve(uploadsDir, filename);
-
-  // Extra hardening: ensure path stays inside uploadsDir
-  const uploadsRoot = path.resolve(uploadsDir);
-  if (!absolutePath.startsWith(uploadsRoot + path.sep) && absolutePath !== uploadsRoot) {
-    const err = new Error("Invalid path");
-    err.status = 400;
-    throw err;
-  }
-
-  const urlPath = `/uploads/${filename}`;
 
   // 1) Verify ownership: the file must belong to the user (avatar, cover or thread media)
   const [ownsAsAvatar, ownsAsCover, ownsAsMedia] = await Promise.all([
@@ -45,20 +33,18 @@ async function deleteMedia({ userId, filename }) {
     throw err;
   }
 
-  // 2) Remove file if exists
-  try {
-    await fs.unlink(absolutePath);
-  } catch (e) {
-    // If not found => 404
-    if (e.code === "ENOENT") {
-      const err = new Error("File not found");
-      err.status = 404;
-      throw err;
+  // 2) Delete from Cloudinary if it's a Cloudinary URL
+  const publicId = publicIdFromUrl(urlPath);
+  if (publicId) {
+    try {
+      await deleteByPublicId(publicId);
+    } catch (e) {
+      // Ignore Cloudinary errors for already-deleted resources
+      console.warn("Cloudinary delete warning:", e.message);
     }
-    throw e;
   }
 
-  // 2) Cleanup DB references owned by the user
+  // 3) Cleanup DB references
   await Promise.all([
     User.updateOne({ _id: userId, avatarUrl: urlPath }, { $set: { avatarUrl: null } }),
     User.updateOne({ _id: userId, coverUrl: urlPath }, { $set: { coverUrl: null } }),

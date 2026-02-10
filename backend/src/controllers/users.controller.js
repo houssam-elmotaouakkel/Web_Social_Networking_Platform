@@ -1,5 +1,6 @@
 const UsersService = require("../services/users.service");
 const ThreadsService = require("../services/threads.service");
+const { uploadBuffer } = require("../config/cloudinary");
 
 
 async function getProfile(req, res) {
@@ -35,8 +36,12 @@ async function uploadAvatar(req, res) {
     return res.status(400).json({ message: "No file uploaded" });
   }
 
-  const avatarUrl = `/uploads/${req.file.filename}`;
-  const user = await UsersService.updateAvatar({ userId: req.user.id, avatarUrl });
+  const { url } = await uploadBuffer(req.file.buffer, {
+    folder: "nexora/avatars",
+    publicId: `user-${req.user.id}`,
+    transformation: [{ width: 400, height: 400, crop: "fill", gravity: "face" }],
+  });
+  const user = await UsersService.updateAvatar({ userId: req.user.id, avatarUrl: url });
   return res.status(200).json({ user });
 }
 
@@ -46,8 +51,12 @@ async function uploadCover(req, res) {
     return res.status(400).json({ message: "No file uploaded" });
   }
 
-  const coverUrl = `/uploads/${req.file.filename}`;
-  const user = await UsersService.updateCover({ userId: req.user.id, coverUrl });
+  const { url } = await uploadBuffer(req.file.buffer, {
+    folder: "nexora/covers",
+    publicId: `user-${req.user.id}`,
+    transformation: [{ width: 1200, height: 400, crop: "fill" }],
+  });
+  const user = await UsersService.updateCover({ userId: req.user.id, coverUrl: url });
   return res.status(200).json({ user });
 }
 

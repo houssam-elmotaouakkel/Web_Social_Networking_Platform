@@ -10,6 +10,7 @@ const validateParams = require("../middlewares/validateParams.middleware");
 const UploadsController = require("../controllers/uploads.controller");
 const { filenameParamsSchema } = require("../validators/uploads.validators");
 const { uploadsLimiter } = require("../middlewares/rateLimiters.middleware");
+const { uploadBuffer } = require("../config/cloudinary");
 
 
 // Thread media upload: POST http://localhost:4000/api/uploads/thread-media
@@ -20,7 +21,8 @@ router.post(
   upload.single("file"),
   asyncHandler(async (req, res) => {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-    return res.status(201).json({ url: `/uploads/${req.file.filename}` });
+    const { url } = await uploadBuffer(req.file.buffer, { folder: "nexora/threads" });
+    return res.status(201).json({ url });
   })
 );
 
