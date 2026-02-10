@@ -1,4 +1,4 @@
-# Nexora — Frontend
+﻿# Nexora — Frontend
 
 > Interface utilisateur React pour la plateforme de réseau social **Nexora**
 
@@ -26,91 +26,92 @@
 
 ```
 frontend/
-├── public/
-│   ├── nexora-icon.png       # Favicon
-│   └── vite.svg
-├── src/
-│   ├── api/                  # Clients Axios par resource (13 fichiers)
-│   │   ├── client.js         # Instance Axios de base (/api)
-│   │   ├── auth.api.js       # Register, login, me, change-password
-│   │   ├── feed.api.js       # Fil d'actualité
-│   │   ├── follows.api.js    # Follow/unfollow, requests
-│   │   ├── notifications.api.js
-│   │   ├── reactions.api.js  # Like/unlike
-│   │   ├── report.api.js     # Signalement de problème
-│   │   ├── reposts.api.js    # Reposts
-│   │   ├── saves.api.js      # Sauvegardes (bookmarks)
-│   │   ├── settings.api.js   # Paramètres utilisateur
-│   │   ├── threads.api.js    # CRUD threads, replies, visibility, archive
-│   │   ├── uploads.api.js    # Upload/suppression de médias
-│   │   └── users.api.js      # Profil, avatar, couverture, recherche
-│   ├── components/
-│   │   ├── auth/             # ProtectedRoute
-│   │   ├── feed/             # FeedItem, FeedList
-│   │   ├── follows/          # FollowButton, FollowList
-│   │   ├── layout/           # Sidebar, MobileNav, MainLayout
-│   │   ├── notifications/    # NotificationItem, NotificationList
-│   │   ├── panel/            # RightPanel, TrendingThreads, SuggestedUsers
-│   │   ├── profile/          # ProfileHeader, ProfileStats
-│   │   ├── reactions/        # LikeButton, RepostButton, SaveButton
-│   │   ├── threads/          # CreateThread, ComposeModal
-│   │   └── ui/               # Avatar, Button, Input, Spinner, Toggle, etc.
-│   ├── contexts/
-│   │   ├── AuthContext.jsx    # Authentification & état utilisateur
-│   │   ├── ThemeContext.jsx   # Thème clair / sombre / auto
-│   │   ├── ComposeContext.jsx # Modal de composition global
-│   │   ├── PanelContext.jsx   # Panneau latéral droit
-│   │   └── BadgeContext.jsx   # Badges de notifications
-│   ├── hooks/
-│   │   ├── useConfirm.js     # Boîte de confirmation
-│   │   ├── useDocumentTitle.js
-│   │   ├── useFeed.js        # Logique du fil d'actualité (pagination curseur)
-│   │   ├── useFocusTrap.js   # Accessibilité modal
-│   │   ├── useThreadComposer.js # Logique partagée CreateThread/ComposeModal
-│   │   └── useUsers.js       # Recherche d'utilisateurs
-│   ├── i18n/                 # Traductions
-│   │   ├── en.json           # English
-│   │   ├── fr.json           # Français
-│   │   ├── ar.json           # العربية
-│   │   └── index.js          # Config i18next
-│   ├── pages/
-│   │   ├── FeedPage.jsx      # Fil d'actualité (page d'accueil)
-│   │   ├── LoginPage.jsx     # Connexion
-│   │   ├── RegisterPage.jsx  # Inscription
-│   │   ├── ProfilePage.jsx   # Profil utilisateur
-│   │   ├── EditProfilePage.jsx
-│   │   ├── ThreadDetailPage.jsx
-│   │   ├── NotificationsPage.jsx
-│   │   ├── FollowersPage.jsx
-│   │   ├── FollowingPage.jsx
-│   │   ├── FollowRequestsPage.jsx
-│   │   ├── SavedThreadsPage.jsx   # Threads sauvegardés
-│   │   ├── RepostedThreadsPage.jsx # Threads repostés
-│   │   ├── settings/         # Pages de paramètres
-│   │   │   ├── SettingsLayout.jsx
-│   │   │   ├── AccountSettingsPage.jsx
-│   │   │   ├── PrivacySettingsPage.jsx
-│   │   │   ├── NotificationSettingsPage.jsx
-│   │   │   ├── DisplaySettingsPage.jsx
-│   │   │   └── ArchivedThreadsPage.jsx
-│   │   └── legal/            # Pages légales
-│   │       ├── LegalLayout.jsx
-│   │       ├── TermsOfServicePage.jsx
-│   │       ├── PrivacyPolicyPage.jsx
-│   │       ├── CookiePolicyPage.jsx
-│   │       └── AccessibilityPage.jsx
-│   ├── utils/
-│   │   ├── constants.js      # API_URL, limites, intervalles
-│   │   ├── formatDate.js     # timeAgo, fullDateTime (date-fns)
-│   │   ├── sanitizeUrl.js    # Sanitization des URLs médias
-│   │   └── storage.js        # Abstraction localStorage (token)
-│   ├── App.jsx               # Routage principal
-│   ├── main.jsx              # Point d'entrée React
-│   └── index.css             # Styles globaux + Tailwind
-├── index.html                # Template HTML (meta tags, favicon, anti-flash)
-├── vite.config.js            # Proxy /api + /uploads → localhost:4000
-├── eslint.config.js
-└── package.json
++-- public/
+|   +-- nexora-icon.png       # Favicon
+|   +-- vite.svg
++-- src/
+|   +-- api/                  # Clients Axios par resource (13 fichiers)
+|   |   +-- client.js         # Instance Axios de base (/api)
+|   |   +-- auth.api.js       # Register, login, me, change-password
+|   |   +-- feed.api.js       # Fil d'actualité
+|   |   +-- follows.api.js    # Follow/unfollow, requests
+|   |   +-- notifications.api.js
+|   |   +-- reactions.api.js  # Like/unlike
+|   |   +-- report.api.js     # Signalement de problème
+|   |   +-- reposts.api.js    # Reposts
+|   |   +-- saves.api.js      # Sauvegardes (bookmarks)
+|   |   +-- settings.api.js   # Paramètres utilisateur
+|   |   +-- threads.api.js    # CRUD threads, replies, visibility, archive
+|   |   +-- uploads.api.js    # Upload/suppression de médias
+|   |   +-- users.api.js      # Profil, avatar, couverture, recherche
+|   +-- components/
+|   |   +-- auth/             # ProtectedRoute
+|   |   +-- feed/             # FeedItem, FeedList
+|   |   +-- follows/          # FollowButton, FollowList
+|   |   +-- layout/           # Sidebar, MobileNav, MainLayout
+|   |   +-- notifications/    # NotificationItem, NotificationList
+|   |   +-- panel/            # RightPanel, TrendingThreads, SuggestedUsers
+|   |   +-- profile/          # ProfileHeader, ProfileStats
+|   |   +-- reactions/        # LikeButton, RepostButton, SaveButton
+|   |   +-- threads/          # CreateThread, ComposeModal
+|   |   +-- ui/               # Avatar, Button, Input, Spinner, Toggle, etc.
+|   +-- contexts/
+|   |   +-- AuthContext.jsx    # Authentification & état utilisateur
+|   |   +-- ThemeContext.jsx   # Thème clair / sombre / auto
+|   |   +-- ComposeContext.jsx # Modal de composition global
+|   |   +-- PanelContext.jsx   # Panneau latéral droit
+|   |   +-- BadgeContext.jsx   # Badges de notifications
+|   +-- hooks/
+|   |   +-- useConfirm.js     # Boîte de confirmation
+|   |   +-- useDocumentTitle.js
+|   |   +-- useFeed.js        # Logique du fil d'actualité (pagination curseur)
+|   |   +-- useFocusTrap.js   # Accessibilité modal
+|   |   +-- useThreadComposer.js # Logique partagée CreateThread/ComposeModal
+|   |   +-- useUsers.js       # Recherche d'utilisateurs
+|   +-- i18n/                 # Traductions
+|   |   +-- en.json           # English
+|   |   +-- fr.json           # Français
+|   |   +-- ar.json           # العربية
+|   |   +-- index.js          # Config i18next
+|   +-- pages/
+|   |   +-- FeedPage.jsx      # Fil d'actualité (page d'accueil)
+|   |   +-- LoginPage.jsx     # Connexion
+|   |   +-- RegisterPage.jsx  # Inscription
+|   |   +-- ProfilePage.jsx   # Profil utilisateur
+|   |   +-- EditProfilePage.jsx
+|   |   +-- ThreadDetailPage.jsx
+|   |   +-- NotificationsPage.jsx
+|   |   +-- SearchPage.jsx    # Recherche d'utilisateurs
+|   |   +-- FollowersPage.jsx
+|   |   +-- FollowingPage.jsx
+|   |   +-- FollowRequestsPage.jsx
+|   |   +-- SavedThreadsPage.jsx   # Threads sauvegardés
+|   |   +-- RepostedThreadsPage.jsx # Threads repostés
+|   |   +-- settings/         # Pages de paramètres
+|   |   |   +-- SettingsLayout.jsx
+|   |   |   +-- AccountSettingsPage.jsx
+|   |   |   +-- PrivacySettingsPage.jsx
+|   |   |   +-- NotificationSettingsPage.jsx
+|   |   |   +-- DisplaySettingsPage.jsx
+|   |   |   +-- ArchivedThreadsPage.jsx
+|   |   +-- legal/            # Pages légales
+|   |       +-- LegalLayout.jsx
+|   |       +-- TermsOfServicePage.jsx
+|   |       +-- PrivacyPolicyPage.jsx
+|   |       +-- CookiePolicyPage.jsx
+|   |       +-- AccessibilityPage.jsx
+|   +-- utils/
+|   |   +-- constants.js      # API_URL, limites, intervalles
+|   |   +-- formatDate.js     # timeAgo, fullDateTime (date-fns)
+|   |   +-- sanitizeUrl.js    # Sanitization des URLs médias
+|   |   +-- storage.js        # Abstraction localStorage (token)
+|   +-- App.jsx               # Routage principal
+|   +-- main.jsx              # Point d'entrée React
+|   +-- index.css             # Styles globaux + Tailwind
++-- index.html                # Template HTML (meta tags, favicon, anti-flash)
++-- vite.config.js            # Proxy /api → localhost:4000
++-- eslint.config.js
++-- package.json
 ```
 
 ---
@@ -171,19 +172,22 @@ Le dev server Vite est configuré pour proxier automatiquement les requêtes API
 | Chemin | Destination |
 |--------|-------------|
 | `/api/*` | `http://localhost:4000` |
-| `/uploads/*` | `http://localhost:4000` |
 
-Cette configuration est définie dans `vite.config.js`. Aucun fichier `.env` n'est nécessaire en développement.
+Cette configuration est définie dans `vite.config.js`.
 
 ### Variables d'environnement (optionnel)
 
-Si vous devez pointer vers un backend distant, vous pouvez créer un fichier `.env` :
+En production ou pour pointer vers un backend distant, créez un fichier `.env` :
 
 ```env
-VITE_API_URL=https://api.example.com
+VITE_API_URL=https://web-social-networking-platform-backend.onrender.com/api
 ```
 
-> **Note** : Par défaut, l'API utilise le chemin relatif `/api` (via le proxy Vite), aucune configuration supplémentaire n'est requise.
+> **Note** : En développement, l'API utilise le chemin relatif `/api` (via le proxy Vite), aucune configuration supplémentaire n'est requise.
+
+### Stockage d'images
+
+Les images (avatars, couvertures, médias) sont stockées sur **Cloudinary**. Les URLs retournées par l'API sont des URLs absolues `https://res.cloudinary.com/...` qui fonctionnent directement sans proxy.
 
 ---
 
@@ -194,6 +198,7 @@ VITE_API_URL=https://api.example.com
 | Feed | `/` | Fil d'actualité avec pagination par curseur |
 | Login | `/login` | Connexion |
 | Register | `/register` | Inscription |
+| Search | `/search` | Recherche d'utilisateurs en temps réel |
 | Profile | `/user/:userId` ou `/profile` | Profil utilisateur (propre ou autre) |
 | Edit Profile | `/edit-profile` | Modifier username / bio |
 | Thread Detail | `/thread/:threadId` | Thread + réponses paginées |
@@ -204,7 +209,7 @@ VITE_API_URL=https://api.example.com
 | Saved Threads | `/saved` | Threads sauvegardés (bookmarks) |
 | Reposted Threads | `/reposts` | Threads repostés |
 | Settings | `/settings/*` | Paramètres (compte, confidentialité, notifications, affichage, archives) |
-| Legal | `/legal/*` | Pages légales (CGU, confidentialité, cookies, accessibilité) |
+| Legal | `/terms`, `/privacy`, `/cookies`, `/accessibility` | Pages légales |
 
 ### Fonctionnalités clés
 
@@ -214,6 +219,7 @@ VITE_API_URL=https://api.example.com
 - **Interactions** : Like, Repost, Save, Reply, Delete
 - **Archivage** : Archiver / désarchiver ses propres threads
 - **Recherche** : Recherche d'utilisateurs en temps réel (debounced)
+- **Lightbox** : Visualisation plein écran des images (ImageViewerModal)
 - **Panneau latéral** : Threads tendance + Utilisateurs suggérés
 - **Accessibilité** : Focus trap dans les modales, labels ARIA
 - **Anti-flash** : Thème et direction appliqués avant le premier rendu
@@ -233,7 +239,7 @@ VITE_API_URL=https://api.example.com
 | `Toggle` | Interrupteur on/off |
 | `ConfirmDialog` | Boîte de confirmation modale |
 | `ErrorBoundary` | Capture d'erreurs React |
-| `ImageViewerModal` | Visualisation plein écran des images |
+| `ImageViewerModal` | Visualisation plein écran des images (lightbox) |
 | `ReportProblemModal` | Formulaire de signalement de problème |
 | `GridBackground` | Fond animé pour les pages auth |
 
