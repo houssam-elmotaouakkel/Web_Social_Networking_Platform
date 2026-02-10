@@ -35,9 +35,6 @@ router.use("/report", reportRoutes);
 router.use("/saves", savesRoutes);
 router.use("/reposts", repostsRoutes);
 
-// ⚠️ TEMPORARY — remove after migration
-router.use("/", require("./migrate.routes"));
-
 
 module.exports = router;
 
