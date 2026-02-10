@@ -20,6 +20,7 @@ export default function AccountSettingsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deletePassword, setDeletePassword] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [showDeletePw, setShowDeletePw] = useState(false)
 
   // Change password state
   const [showPasswordForm, setShowPasswordForm] = useState(false)
@@ -266,13 +267,22 @@ export default function AccountSettingsPage() {
               <p className="text-sm font-semibold text-danger">{t('settings.deleteAccountConfirmTitle')}</p>
               <p className="text-xs text-text-muted mt-1">{t('settings.deleteAccountConfirmDesc')}</p>
             </div>
-            <input
-              type="password"
-              value={deletePassword}
-              onChange={(e) => setDeletePassword(e.target.value)}
-              placeholder={t('settings.deleteAccountPasswordPlaceholder')}
-              className="w-full bg-bg-input border border-border rounded-xl py-2.5 px-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-danger"
-            />
+            <div className="relative">
+              <input
+                type={showDeletePw ? 'text' : 'password'}
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                placeholder={t('settings.deleteAccountPasswordPlaceholder')}
+                className="w-full bg-bg-input border border-border rounded-xl py-2.5 px-3 pe-10 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-danger"
+              />
+              <button
+                type="button"
+                onClick={() => setShowDeletePw(!showDeletePw)}
+                className="absolute end-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary cursor-pointer"
+              >
+                {showDeletePw ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
             <div className="flex gap-2">
               <button
                 type="button"
