@@ -9,9 +9,10 @@ import SaveButton from '../reactions/SaveButton'
 import { useAuth } from '../../contexts/AuthContext'
 import { threadsAPI } from '../../api/threads.api'
 import { timeAgo } from '../../utils/formatDate'
-import { sanitizeMediaUrl, safeOpenUrl, isAllowedUrl } from '../../utils/sanitizeUrl'
+import { sanitizeMediaUrl, isAllowedUrl } from '../../utils/sanitizeUrl'
 import { useConfirm } from '../../hooks/useConfirm'
 import ConfirmDialog from '../ui/ConfirmDialog'
+import ImageViewerModal from '../ui/ImageViewerModal'
 import toast from 'react-hot-toast'
 
 function FeedItem({ thread, author, onDelete, onUpdate }) {
@@ -22,6 +23,7 @@ function FeedItem({ thread, author, onDelete, onUpdate }) {
   const [showVisOptions, setShowVisOptions] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [currentVisibility, setCurrentVisibility] = useState(thread.visibility)
+  const [viewerSrc, setViewerSrc] = useState(null)
   const menuRef = useRef(null)
   const { confirm, confirmDialogProps } = useConfirm()
 
@@ -263,10 +265,10 @@ function FeedItem({ thread, author, onDelete, onUpdate }) {
                   alt={`${t('thread.media')} ${i + 1}`}
                   onClick={(e) => {
                     e.stopPropagation()
-                    safeOpenUrl(sanitizeMediaUrl(url))
+                    setViewerSrc(sanitizeMediaUrl(url))
                   }}
-                  className="rounded-xl border border-border object-cover w-full max-h-75
-                             hover:opacity-90 transition-opacity"
+                  className="rounded-xl border border-border object-contain w-full max-h-96 bg-black/5
+                             cursor-pointer hover:opacity-90 transition-opacity"
                 />
               ))}
             </div>
@@ -310,6 +312,12 @@ function FeedItem({ thread, author, onDelete, onUpdate }) {
       </div>
     </article>
     <ConfirmDialog {...confirmDialogProps} />
+    <ImageViewerModal
+      src={viewerSrc}
+      alt={t('thread.media')}
+      isOpen={!!viewerSrc}
+      onClose={() => setViewerSrc(null)}
+    />
     </>
   )
 }

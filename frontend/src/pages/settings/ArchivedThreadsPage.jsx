@@ -9,6 +9,7 @@ import Spinner from '../../components/ui/Spinner'
 import { useAuth } from '../../contexts/AuthContext'
 import { timeAgo } from '../../utils/formatDate'
 import { sanitizeMediaUrl, isAllowedUrl } from '../../utils/sanitizeUrl'
+import ImageViewerModal from '../../components/ui/ImageViewerModal'
 import toast from 'react-hot-toast'
 
 export default function ArchivedThreadsPage() {
@@ -20,6 +21,7 @@ export default function ArchivedThreadsPage() {
 
   const [threads, setThreads] = useState([])
   const [loading, setLoading] = useState(true)
+  const [viewerSrc, setViewerSrc] = useState(null)
 
   useEffect(() => {
     const load = async () => {
@@ -131,7 +133,9 @@ export default function ArchivedThreadsPage() {
                             key={i}
                             src={sanitizeMediaUrl(url)}
                             alt={`${t('thread.media')} ${i + 1}`}
-                            className="rounded-xl border border-border object-cover w-full max-h-75"
+                            className="rounded-xl border border-border object-contain w-full max-h-96 bg-black/5
+                                       cursor-pointer hover:opacity-90 transition-opacity"
+                            onClick={() => setViewerSrc(sanitizeMediaUrl(url))}
                           />
                         ))}
                       </div>
@@ -169,6 +173,12 @@ export default function ArchivedThreadsPage() {
           </div>
         )}
       </div>
+      <ImageViewerModal
+        src={viewerSrc}
+        alt={t('thread.media')}
+        isOpen={!!viewerSrc}
+        onClose={() => setViewerSrc(null)}
+      />
     </div>
   )
 }

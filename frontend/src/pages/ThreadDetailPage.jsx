@@ -12,11 +12,12 @@ import RepostButton from '../components/reactions/RepostButton'
 import SaveButton from '../components/reactions/SaveButton'
 import Button from '../components/ui/Button'
 import { fullDateTime, timeAgo } from '../utils/formatDate'
-import { sanitizeMediaUrl, safeOpenUrl, isAllowedUrl } from '../utils/sanitizeUrl'
+import { sanitizeMediaUrl, isAllowedUrl } from '../utils/sanitizeUrl'
 import toast from 'react-hot-toast'
 import { THREAD_MAX_LENGTH } from '../utils/constants'
 import { useConfirm } from '../hooks/useConfirm'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import ImageViewerModal from '../components/ui/ImageViewerModal'
 
 export default function ThreadDetailPage() {
   const { threadId } = useParams()
@@ -32,6 +33,7 @@ export default function ThreadDetailPage() {
   const [loading, setLoading] = useState(true)
   const [replyContent, setReplyContent] = useState('')
   const [posting, setPosting] = useState(false)
+  const [viewerSrc, setViewerSrc] = useState(null)
 
   const loadThread = async () => {
     setLoading(true)
@@ -175,9 +177,9 @@ export default function ThreadDetailPage() {
                 key={i}
                 src={sanitizeMediaUrl(url)}
                 alt={`${t('thread.media')} ${i + 1}`}
-                className="rounded-xl border border-border object-cover w-full max-h-100
+                className="rounded-xl border border-border object-contain w-full max-h-128 bg-black/5
                            cursor-pointer hover:opacity-90"
-                onClick={() => safeOpenUrl(sanitizeMediaUrl(url))}
+                onClick={() => setViewerSrc(sanitizeMediaUrl(url))}
               />
             ))}
           </div>
@@ -327,6 +329,12 @@ export default function ThreadDetailPage() {
       <div className="h-20 md:h-0" />
     </div>
     <ConfirmDialog {...confirmDialogProps} />
+    <ImageViewerModal
+      src={viewerSrc}
+      alt={t('thread.media')}
+      isOpen={!!viewerSrc}
+      onClose={() => setViewerSrc(null)}
+    />
     </>
   )
 }
