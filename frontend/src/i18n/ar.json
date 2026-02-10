@@ -161,6 +161,7 @@
     "unreadCount": "{{count}} غير مقروءة",
     "confirmDeleteAll": "حذف جميع الإشعارات؟",
     "sentFollowRequest": "أرسل لك طلب متابعة",
+    "startedFollowingYou": "بدأ بمتابعتك",
     "acceptedFollowRequest": "قبل طلب متابعتك",
     "repliedToThread": "رد على منشورك",
     "likedYourThread": "أعجب بمنشورك",

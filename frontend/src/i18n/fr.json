@@ -161,6 +161,7 @@
     "unreadCount": "{{count}} non lue(s)",
     "confirmDeleteAll": "Supprimer toutes les notifications ?",
     "sentFollowRequest": "vous a envoyé une demande d'abonnement",
+    "startedFollowingYou": "a commencé à vous suivre",
     "acceptedFollowRequest": "a accepté votre demande d'abonnement",
     "repliedToThread": "a répondu à votre thread",
     "likedYourThread": "a aimé votre thread",

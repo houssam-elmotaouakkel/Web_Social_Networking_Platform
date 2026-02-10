@@ -77,7 +77,7 @@ async function requestFollow({ followerId, targetUserId }) {
   await NotificationsService.createOnce({
     userId: targetUserId,
     actorId: followerId,
-    type: "FOLLOW_REQUEST",
+    type: status === "PENDING" ? "FOLLOW_REQUEST" : "NEW_FOLLOWER",
     entityType: "FOLLOW",
     entityId: follow._id,
     meta: { status: follow.status },

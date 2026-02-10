@@ -11,6 +11,12 @@ const TYPE_CONFIG = {
     bg: 'bg-accent/10',
     textKey: 'notifications.sentFollowRequest',
   },
+  NEW_FOLLOWER: {
+    icon: UserPlus,
+    color: 'text-accent',
+    bg: 'bg-accent/10',
+    textKey: 'notifications.startedFollowingYou',
+  },
   FOLLOW_ACCEPTED: {
     icon: UserCheck,
     color: 'text-green-400',
@@ -54,6 +60,9 @@ export default function NotificationItem({ notification, actor, onMarkRead }) {
     switch (notification.type) {
       case 'FOLLOW_REQUEST':
         navigate('/follow-requests')
+        break
+      case 'NEW_FOLLOWER':
+        navigate(`/user/${notification.actorId}`)
         break
       case 'FOLLOW_ACCEPTED':
         navigate(`/user/${notification.actorId}`)

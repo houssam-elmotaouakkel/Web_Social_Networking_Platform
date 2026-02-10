@@ -161,6 +161,7 @@
     "unreadCount": "{{count}} unread",
     "confirmDeleteAll": "Delete all notifications?",
     "sentFollowRequest": "sent you a follow request",
+    "startedFollowingYou": "started following you",
     "acceptedFollowRequest": "accepted your follow request",
     "repliedToThread": "replied to your thread",
     "likedYourThread": "liked your thread",

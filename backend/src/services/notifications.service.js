@@ -5,6 +5,7 @@ const User = require("../models/User.model");
 
 const TYPE_TO_PREF_KEY = {
   FOLLOW_REQUEST: "followRequest",
+  NEW_FOLLOWER: "followRequest",
   FOLLOW_ACCEPTED: "followAccepted",
   REPLY: "reply",
   LIKE_THREAD: "likeThread",
