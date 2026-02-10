@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, ChevronRight, Mail, AtSign, KeyRound, AlertTriangle, LogOut, Eye, EyeOff } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Mail, AtSign, KeyRound, AlertTriangle, LogOut, Eye, EyeOff, Trash2 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { authAPI } from '../../api/auth.api'
+import { usersAPI } from '../../api/users.api'
 import ReportProblemModal from '../../components/ui/ReportProblemModal'
 import toast from 'react-hot-toast'
 
@@ -14,6 +15,11 @@ export default function AccountSettingsPage() {
   const isRtl = i18n.dir() === 'rtl'
 
   const [reportOpen, setReportOpen] = useState(false)
+
+  // Delete account state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   // Change password state
   const [showPasswordForm, setShowPasswordForm] = useState(false)
@@ -52,6 +58,25 @@ export default function AccountSettingsPage() {
   const handleLogout = () => {
     logout()
     navigate('/login')
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) return
+    setDeleting(true)
+    try {
+      // Verify password first by attempting a login
+      await authAPI.login({ email: user.email, password: deletePassword })
+      // Password correct — proceed with deletion
+      await usersAPI.deleteMe()
+      toast.success(t('settings.deleteAccountSuccess'))
+      logout()
+      navigate('/login')
+    } catch (err) {
+      const msg = err.response?.data?.message || t('settings.deleteAccountFailed')
+      toast.error(msg)
+    } finally {
+      setDeleting(false)
+    }
   }
 
   return (
@@ -217,6 +242,59 @@ export default function AccountSettingsPage() {
           <LogOut size={18} />
           <span className="text-sm font-medium">{t('settings.logOut')}</span>
         </button>
+      </section>
+
+      {/* Delete account */}
+      <section className="px-4 py-4 border-t border-border">
+        <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">
+          {t('settings.deleteAccountSection')}
+        </h3>
+        {!showDeleteConfirm ? (
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="w-full flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-danger/10 transition-colors cursor-pointer"
+          >
+            <Trash2 size={18} className="text-danger" />
+            <div className="text-start flex-1 min-w-0">
+              <p className="text-sm font-medium text-danger">{t('settings.deleteAccountTitle')}</p>
+              <p className="text-xs text-text-muted">{t('settings.deleteAccountDesc')}</p>
+            </div>
+          </button>
+        ) : (
+          <div className="px-1 space-y-3">
+            <div className="p-3 rounded-xl bg-danger/10 border border-danger/20">
+              <p className="text-sm font-semibold text-danger">{t('settings.deleteAccountConfirmTitle')}</p>
+              <p className="text-xs text-text-muted mt-1">{t('settings.deleteAccountConfirmDesc')}</p>
+            </div>
+            <input
+              type="password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              placeholder={t('settings.deleteAccountPasswordPlaceholder')}
+              className="w-full bg-bg-input border border-border rounded-xl py-2.5 px-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-danger"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDeleteConfirm(false)
+                  setDeletePassword('')
+                }}
+                className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium text-text-secondary hover:bg-bg-hover transition-colors cursor-pointer"
+              >
+                {t('settings.cancelButton')}
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={deleting || !deletePassword}
+                className="flex-1 py-2.5 rounded-xl bg-danger text-white text-sm font-medium hover:bg-danger/90 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                {deleting ? t('common.loading') : t('settings.deleteAccountConfirmButton')}
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       <div className="h-20 md:h-0" />

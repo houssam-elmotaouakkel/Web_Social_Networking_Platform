@@ -177,7 +177,7 @@ export default function ThreadDetailPage() {
                 alt={`${t('thread.media')} ${i + 1}`}
                 className="rounded-xl border border-border object-cover w-full max-h-100
                            cursor-pointer hover:opacity-90"
-                onClick={() => safeOpenUrl(url)}
+                onClick={() => safeOpenUrl(sanitizeMediaUrl(url))}
               />
             ))}
           </div>

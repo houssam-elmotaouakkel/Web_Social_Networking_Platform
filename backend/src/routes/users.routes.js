@@ -61,6 +61,12 @@ router.post( // POST http://localhost:4000/api/users/me/cover
   asyncHandler(UsersController.uploadCover)
 );
 
+router.delete( // DELETE http://localhost:4000/api/users/me
+  "/me",
+  authMiddleware,
+  asyncHandler(UsersController.deleteAccount)
+);
+
 // ⚠️ Must be AFTER all /me routes to avoid capturing "me" as :userId
 router.get( // GET http://localhost:4000/api/users/:userId
   "/:userId",

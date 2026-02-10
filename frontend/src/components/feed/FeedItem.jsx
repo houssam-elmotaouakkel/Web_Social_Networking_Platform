@@ -263,7 +263,7 @@ function FeedItem({ thread, author, onDelete, onUpdate }) {
                   alt={`${t('thread.media')} ${i + 1}`}
                   onClick={(e) => {
                     e.stopPropagation()
-                    safeOpenUrl(url)
+                    safeOpenUrl(sanitizeMediaUrl(url))
                   }}
                   className="rounded-xl border border-border object-cover w-full max-h-75
                              hover:opacity-90 transition-opacity"

@@ -4,7 +4,7 @@ const { Schema, Types } = mongoose;
 const ThreadSchema = new Schema(
   {
     authorId: { type: Types.ObjectId, ref: "User", required: true, index: true },
-    content: { type: String, required: true, trim: true, maxlength: 2000 },
+    content: { type: String, default: "", trim: true, maxlength: 2000 },
     mediaUrls: [{ type: String }],
     visibility: { type: String, enum: ["PUBLIC", "FOLLOWERS", "PRIVATE"], default: "PUBLIC", index: true },
     archivedAt: { type: Date, default: null },

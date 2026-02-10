@@ -21,4 +21,5 @@ export const usersAPI = {
   },
   search: (q, limit = 10) => client.get('/users/search', { params: { q, limit } }),
   suggestions: (limit = 5) => client.get('/users/suggestions', { params: { limit } }),
+  deleteMe: () => client.delete('/users/me'),
 }

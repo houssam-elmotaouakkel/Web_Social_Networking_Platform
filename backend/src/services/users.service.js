@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 const User = require("../models/User.model");
 const Follow = require("../models/Follow.model");
 const Thread = require("../models/Thread.model");
+const Reply = require("../models/Reply.model");
+const Reaction = require("../models/Reaction.model");
+const Notification = require("../models/Notification.model");
+const Save = require("../models/Save.model");
+const Repost = require("../models/Repost.model");
 const toPublicUser = require("../utils/toPublicUser");
 
 
@@ -222,6 +227,59 @@ async function getSuggestedUsers({ userId, limit = 5 }) {
     .sort((a, b) => b.followersCount - a.followersCount);
 }
 
+/**
+ * Permanently deletes a user account and all associated data.
+ * Cascades: threads, replies, reactions, follows, notifications, saves, reposts.
+ */
+async function deleteAccount({ userId }) {
+  const user = await User.findById(userId).select("_id");
+  if (!user) {
+    const err = new Error("User not found");
+    err.status = 404;
+    throw err;
+  }
+
+  // Get all thread IDs authored by this user (needed for cascading)
+  const userThreadIds = (
+    await Thread.find({ authorId: userId }).select("_id").lean()
+  ).map((t) => t._id);
+
+  // Get all reply IDs authored by this user
+  const userReplyIds = (
+    await Reply.find({ authorId: userId }).select("_id").lean()
+  ).map((r) => r._id);
+
+  await Promise.all([
+    // Delete user's threads
+    Thread.deleteMany({ authorId: userId }),
+
+    // Delete replies on user's threads + replies by user
+    Reply.deleteMany({ $or: [{ threadId: { $in: userThreadIds } }, { authorId: userId }] }),
+
+    // Delete reactions by user + reactions on user's threads/replies
+    Reaction.deleteMany({
+      $or: [
+        { userId },
+        { targetType: "THREAD", targetId: { $in: userThreadIds } },
+        { targetType: "REPLY", targetId: { $in: userReplyIds } },
+      ],
+    }),
+
+    // Delete follows in both directions
+    Follow.deleteMany({ $or: [{ followerId: userId }, { followingId: userId }] }),
+
+    // Delete notifications sent to or triggered by user
+    Notification.deleteMany({ $or: [{ userId }, { actorId: userId }] }),
+
+    // Delete saves & reposts by user + on user's threads
+    Save.deleteMany({ $or: [{ userId }, { threadId: { $in: userThreadIds } }] }),
+    Repost.deleteMany({ $or: [{ userId }, { threadId: { $in: userThreadIds } }] }),
+  ]);
+
+  // Finally delete the user document
+  await User.findByIdAndDelete(userId);
+}
+
 module.exports = {
   updatePrivacy,
   updateAvatar,
@@ -230,4 +288,5 @@ module.exports = {
   getUserProfile,
   searchUsers,
   getSuggestedUsers,
+  deleteAccount,
 };

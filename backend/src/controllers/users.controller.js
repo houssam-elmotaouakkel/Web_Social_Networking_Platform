@@ -80,6 +80,11 @@ async function getUserThreads(req, res) {
   return res.status(200).json({ threads });
 }
 
+async function deleteAccount(req, res) {
+  await UsersService.deleteAccount({ userId: req.user.id });
+  return res.status(200).json({ message: "Account deleted" });
+}
+
 module.exports = {
   updatePrivacy,
   uploadAvatar,
@@ -89,4 +94,5 @@ module.exports = {
   searchUsers,
   getSuggestedUsers,
   getUserThreads,
+  deleteAccount,
 };

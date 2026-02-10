@@ -2,7 +2,7 @@
 const { z } = require("zod");
 
 const createThreadSchema = z.object({
-  content: z.string().trim().min(1).max(2000),
+  content: z.string().trim().max(2000).optional().default(""),
 
   // accepte "/uploads/xxx.jpg" ou une URL complète
   mediaUrls: z
@@ -21,7 +21,10 @@ const createThreadSchema = z.object({
     .default([]),
 
   visibility: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]).optional().default("PUBLIC"),
-});
+}).refine(
+  (data) => data.content.length > 0 || data.mediaUrls.length > 0,
+  { message: "Thread must have content or at least one media", path: ["content"] }
+);
 
 const updateVisibilitySchema = z.object({
   visibility: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]),
